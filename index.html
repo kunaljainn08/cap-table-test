@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cap Table Lab: startup fundraise and dilution simulator</title>
+<title>CapView: startup cap table, dilution and exit simulator</title>
 <meta name="description" content="Model startup fundraising round by round: dilution, option pool top-ups, price per share and the exit waterfall with liquidation preferences.">
-<meta property="og:title" content="Cap Table Lab: startup fundraise and dilution simulator">
+<meta property="og:title" content="CapView: startup cap table, dilution and exit simulator">
 <meta property="og:description" content="Model startup rounds, option pool top-ups and exit waterfalls with liquidation preferences.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2211%22 fill=%22none%22 stroke=%22%231F3A93%22 stroke-width=%226%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2211%22 fill=%22none%22 stroke=%22%23E0A030%22 stroke-width=%226%22 stroke-dasharray=%2220 100%22 transform=%22rotate(-90 16 16)%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpath d='M2.5 17Q17 4 31.5 17Q17 30 2.5 17Z' fill='none' stroke='%231F3A93' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cg transform='rotate(-90 17 17)' fill='none' stroke-width='4.2'%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%231F3A93' stroke-dasharray='19.5 39'/%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%23E0A030' stroke-dasharray='9.5 39' stroke-dashoffset='-20.5'/%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%23E0674A' stroke-dasharray='7.5 39' stroke-dashoffset='-31'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
@@ -49,6 +49,8 @@ header.top p{margin:8px 0 0;color:var(--muted);max-width:58ch}
 .field input:focus,.field select:focus{border-color:var(--brand);outline:none;background:var(--surface)}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.adv{display:grid;grid-template-columns:minmax(0,1fr) 80px minmax(0,1fr) 28px;gap:8px;align-items:end;margin-bottom:8px}
+@media (max-width:420px){.adv{grid-template-columns:minmax(0,1fr) 70px 28px}.adv .when{grid-column:1 / 3}}
 .founder{display:grid;grid-template-columns:minmax(0,1fr) 110px 28px;gap:8px;align-items:end;margin-bottom:8px}
 .icon{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:6px 4px}
 .icon:hover{color:var(--neg)}
@@ -112,6 +114,7 @@ nav.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:
 nav.site .in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:600;text-decoration:none;color:var(--ink);white-space:nowrap}
 .logo svg{flex:none}
+.wordmark{font-weight:400;font-size:18px;letter-spacing:-.01em}.wordmark b{font-weight:700;color:var(--brand)}
 nav.site .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 nav.site .links a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:14.5px;white-space:nowrap}
 nav.site .links a:hover{color:var(--ink);background:var(--soft)}
@@ -174,6 +177,7 @@ nav.site .links a.cta{background:var(--brand);color:var(--brand-ink)}
 .glossary details[open] summary::after{content:"−"}
 .glossary details p{margin:0 0 14px;color:var(--muted);max-width:75ch}
 
+.avatar{width:132px;height:132px;border-radius:50%;object-fit:cover;display:block;box-shadow:0 0 0 4px var(--surface),0 0 0 6px #E0A030}
 .about{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px}
 @media (max-width:640px){.about{grid-template-columns:1fr}}
 .about h2{font-family:var(--serif);font-weight:400;font-size:34px;margin:0 0 4px;line-height:1.1}
@@ -182,14 +186,28 @@ nav.site .links a.cta{background:var(--brand);color:var(--brand-ink)}
 .about .links{display:flex;gap:8px;flex-wrap:wrap}
 .about .links a{text-decoration:none}
 footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid var(--line)}
+.print-only{display:none}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--soft:#F5F6F8;--ink:#111;--muted:#555;--line:#D5D9E0;color-scheme:light}
+  body{background:#fff;font-size:11.5px}
+  body::before,nav.site,header.hero,section.band:not(#simulator),.section-head,.sim-top,.grid>div:first-child,.tabs,#tab-how,footer.site,.exit-ctl,.range{display:none!important}
+  #simulator{padding:0}.sim-shell{border:0;box-shadow:none;padding:0}
+  .grid{display:block}.print-only{display:block}
+  #printHead h1{font-family:var(--serif);font-weight:400;font-size:28px;margin:0}#printHead p{color:#555;margin:4px 0 14px}
+  .tabpanel{padding-top:10px}.tbl{overflow:visible}table{font-size:10.5px}th,td{padding:5px 8px}
+  .card,.kpi,.tbl,.callout{break-inside:avoid}
+  .kpi b{font-size:22px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <nav class="site" aria-label="Main">
   <div class="in">
-    <a class="logo" href="#top" aria-label="Cap table simulator, home">
-      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" style="stroke:var(--line)" stroke-width="6"/><circle cx="16" cy="16" r="11" fill="none" stroke="#1F3A93" stroke-width="6" stroke-dasharray="29 100" transform="rotate(-90 16 16)"/><circle cx="16" cy="16" r="11" fill="none" stroke="#E0A030" stroke-width="6" stroke-dasharray="14 100" stroke-dashoffset="-29" transform="rotate(-90 16 16)"/><circle cx="16" cy="16" r="11" fill="none" stroke="#E0674A" stroke-width="6" stroke-dasharray="14 100" stroke-dashoffset="-43" transform="rotate(-90 16 16)"/></svg>
-      <span>Cap Table Lab</span>
+    <a class="logo" href="#top" aria-label="CapView, home">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M2.5 17Q17 4 31.5 17Q17 30 2.5 17Z" fill="none" stroke="#1F3A93" stroke-width="2.6" stroke-linejoin="round"/><g transform="rotate(-90 17 17)" fill="none" stroke-width="4.2"><circle cx="17" cy="17" r="6.2" stroke="#1F3A93" stroke-dasharray="19.5 39"/><circle cx="17" cy="17" r="6.2" stroke="#E0A030" stroke-dasharray="9.5 39" stroke-dashoffset="-20.5"/><circle cx="17" cy="17" r="6.2" stroke="#E0674A" stroke-dasharray="7.5 39" stroke-dashoffset="-31"/></g></svg>
+      <span class="wordmark">Cap<b>View</b></span>
     </a>
     <div class="links">
       <a href="#learn">Learn</a>
@@ -237,9 +255,9 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
 </section>
 
 <section class="band" id="simulator" aria-labelledby="simhead">
-  <div class="section-head"><h2 id="simhead">The simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type, and your inputs are saved in this browser.</p></div>
+  <div class="section-head"><h2 id="simhead">The simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type. Refreshing the page starts again from the example.</p></div>
   <div class="sim-shell">
-    <div class="sim-top"><b>Example: a SaaS startup from founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to example</button><button class="btn primary" id="csv">Download cap table (CSV)</button></div></div>
+    <div class="sim-top"><b>Example: a SaaS startup from founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to example</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
   <div class="grid">
     <div>
       <div class="panel">
@@ -255,6 +273,13 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
       </div>
 
       <div class="panel">
+        <h2>Mentors &amp; advisors</h2>
+        <p class="hint">Equity given for guidance, as a % of the company on the day it is granted. It dilutes everyone who already holds shares.</p>
+        <div id="advisors"></div>
+        <button class="add" id="addAdvisor">Add mentor or advisor</button>
+      </div>
+
+      <div class="panel">
         <h2>Funding rounds</h2>
         <p class="hint">Amounts in ₹ crore. The pool target is the ESOP pool as a % of post-money, topped up before the round (the option pool shuffle).</p>
         <div id="rounds"></div>
@@ -264,6 +289,7 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
     </div>
 
     <div>
+      <div id="printHead" class="print-only"></div>
       <div class="kpis" id="kpis"></div>
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected="true" data-tab="own">Ownership</button>
@@ -350,7 +376,7 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
 
 <section class="band" id="about" aria-labelledby="abouthead">
   <div class="about">
-    <svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="56" fill="#1F3A93"/><circle cx="56" cy="56" r="47" fill="none" stroke="#E0A030" stroke-width="2" stroke-dasharray="4 5"/><text x="56" y="69" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="40" fill="#fff">KJ</text></svg>
+    <img class="avatar" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCT/wAARCAEYARgDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAgABAwYEBQcI/8QAQxAAAQQBAgQFAgMECQIEBwAAAQACAxEEBSEGEjFBBxNRYXEigRQykSNSobEIFTNCU3LB0eEW8CRDYoIXJURUY2SS/8QAGgEAAwEBAQEAAAAAAAAAAAAAAAECAwQFBv/EACQRAAIDAAIDAAMBAAMAAAAAAAABAgMRITEEEkETIlEUMmGB/9oADAMBAAIRAxEAPwD0AUct/R8FO5ln7InjaPf/ALtAyPlLiNuqTmmq6i+qMgl1dKTDme4DtWyBAkfTZGyDkJ3rZFW3qnfu0EdyUARtq9whIFbI0IGx6+qAAe2+WvQIeXa63Uva/SkxPdMZARQ9ELrNAKSQb3f2Q1sLqrSEARRQ3akpCRuVLGmCOqYtsfdSIXdhSlBpA5hFpi0t6qYoSwFUmGEXZJG4corZAnohUhIRJJggCEPKGjr1RkIXCwk0UROHohr3KlLCRVoC0hJEgcu9pi3dHylMjEw0GqTEI6Q1Z3S9R6RvbshDVMGIHN3Q9QmtI3CkykLfRC4b0mmHQBFpJ6SRiDS5GwR7pPcKbfbonpCTRFkUrGOBzO7m0zQecbdEgd+pr5RN390AMG00npQTFtRbnoUYNsJ9ELgXCtqQBCTvXqnP+iIsHNv6IR1LatIQO3Lv6pj0CNwsISNm3SAAeAe+yhNdBalkNOoUgcPhDYDcoAQHopOvZCRupQgeyQ3TnpZUL8mKP87w35T4GSObablIUX43Gcdp4zfQc26MSscLEjTXXdGDQntB6oSwFSdRzAgj2TVXZDQyIgc1XQQnqVNXsmLAUtFhCmoIyw71uhVaIGt0iKRJUkkPQKtAY79FKRXRCjP4PhkLhymkKlfVqMikJkvsZAR1RoXC0pABZS5e6MgBARupGC5u6STh0STRLLjuOtIe/ROUqWhQ/K0E+nZKMU8k9KKVCiHWnFfV8V1QAA6dk5/LaVAWn7X2QBHdUCOnsmscx2JR1ZSAF3SAI6uvlCRsPYqQAbkeqE/CQiGQbXW6YdKRSUwEk0OqqXE3iJo/D8Za6cSzdmRne0mMss+VDjML5pWRNHd7gAqlrPivwposjosjVYnSD+7F9RP6LknFXHWdxFI6KdzceF5tsQcbr1JXNtWxst8j5cfHaWt62/mv4QkI7Br/APSIqV0ei4ErmD/zJqo/ZUHWPFvizU7cc4RB21RR0B+qpJkyZXeR5MeO07dx77oXYjvLD3ytdHsDTr/UdU8Fpn5fGGtS7nV5+Ydtwb+U+Jx5xFjW+PV5wW9y87rTvZhxlwb5pfzbEuBFIZZYHFoa0hg6gd0vUNL5pXjLxlpszfLzRJYvkcAQ4fC6zwh4/wCm6lCyLXsU4OR+V0rN4yf5heZQ/b9nbSOm6TcqSM097h8bowNPdOBqmDqsDcjBy4ciJ24dG8FZNey8V8N8c6nw1lifT8x8Zvdl/S8e4XduAPHrC1eZmn68GYsrqDMgH6CfQ+nyjRpnXUJYD62jYWyN52ODmu3BBsEJy2h1SK1EPl+6BTlROby90Jg0D1Q9OqJIqhIie2+gUbhupu6F7e6TBr6QpDdEQhTEM4WEJ2RoXiypaGgTSSR32SU4DLanH5b90xqk4PZagKySTV7pu52ROFd0wHW/RADUSi25APdJrUj+UH3QA232TegSPol0KAApwHT+8geT17qUk191VePeLsXhfTHufI0ZD2nymXuSkww0viPxwzQ8U4eM4uyZBRDeoC4fNlSyhz54K5ibLuu/ysJ/EkuqatJkahJJKZSbdewPZZc+NBFj2cuVzSfp5n1t3BtAjCztSxonMME1OaNmvbzD9VXtT1SOdpcI4mPLrJ6WfX4UeqtgmkefMcLOzXPq/wCK000EJB5po2/ugS9FQGW/Wnu5myxNePUi9lrZshkhe5g5Ceyx5G8hPJkX7bKJ79/qcw/CRITpHVv+oUYeRu0ndLzIz1H6JfQ4/mKGx4E2ZzaWRE5sp5XDc9+yxuUepI+LU8McZB+oj4QBI/HDXckjenQgooHSMBAO7d69UD5y3aSyOxQzPrlmiJ26tQI6x4f+NeqcMRw4GU45eEz6Q15tzR7FekuH9ewuJdKg1LAlbJDK0Hbq09wfdeFGZIceZu3t6FX7w08Us/gjMay/OwZXgyQuP6kfZTmD09eEdkLmgilj6VqmJrenQajgyCTHnYHscP5fKyXGhaH/AEshIokeiYpyCOvdMUyQSKQkWEXyhclIr4RO6pkZ3KEhCZAKEm0SEblMYJSRu9ElLQ9LUG2E42SJJNJChsrAR6lJpNpOrsmHVABEElOPSwmcUPdACqrSSTIAjnf5UTn7gNaTa8neLPFU2ocRZbDO5zWOLASboDsF6T481yHQeHMrJnk8tvIWgg7kkdB7rxdxDqH4vPlmsEucTRSYmRw5TxICx5af3gaW4fxDqbMcwtPnMA254gQfuVTvMEsoaeZ19ADStXD/AAnqGpvaImyAO2DW2UpTUeyowcujVZ2s5UhLXRxx32DBstXI+V/QE/AXdNN8Cs3KgbLJ5LXntIsqTwHyRTjJjxgdaBKzdxp+E89nHmefyHdSR6VJJX09fQLukng5LCf7Vh+yEeGLousjNva1k/Jw1j4unGotAlfsGFZbeF5D1aV1v/oJ0R2kH2CF/CkkIoUa9lk/JZovFRyxvCkt3uFM3hWdwqrC6I/R5Ijuw18I4cJrTRAB+Ev9Eh/54nNpOEckNJ5OnotZNouRjvJa11ei7QzCa8dAfssTN4fhyAfpAd6hVG9kSoXw4dPjPhlLuUj1akyWqeNwOy6XrHBpmjcWNFt6eq51qeDJpuQWPaW79wuquxS4OWdbjydn8CPE46NnN0HUp7wco/snE7RPP+hXpLma8AtIIO4IXgLCzX487HxPLXNPMPYhen/B/wAVo9ZgxtJ1KQNmk+iJ/bm/dPz2VkJnXOWzubQEUSplE/8AMUl2NgEd0xRFMQqBAcotQm7NrIpRSVfulmAwE1BPW6ZMQiLSSca7JIAtvKLtC7aqREWEgALKAABKcbXskOl+6Ymh0QAVgmqSFG9kAPe+qJnVMYm7k9UxbXVENtqQZDyyF7+nK0lIR5y/pCcWvdrbNIEpfDAzmLGmvqK4DnylzjQDb/VXDj7UMrVuJtRzcp5dNLM/b91oNAKsaFpr9X1aOAbhzuh7pbi0EteG+4B4Kn1rOZI5hbH1JI2AXovh3SMTSsZkUMTW1sTW5Wo4a0PH0XToomNHNQ5j6lWHGBLweoteVba5TPVqqUYlqwvyDbsiyiXMPp6KDAP0Ab9FlTs/Z1fbutk9iZNclfyhzONgfC108exK3U8G5HQ9rWsksF4I3a6q9VzSOiJqZG0oHRtfvS2MzBRICxvKHTdZ6aGvlwmOvZYE+mMO4AtWDygVFLCANwkmxMrBgdC4ikiObYhbbIhaaquu6xXY460t4tmcjCdA3lOwJ9+6574j6Qx2IyZsdOvcgLpDxymlXuMML8XpUlCyN1rXLJIwsWxZwgs5X30IVn4J1F2BqeLLbuWGdr3cpo8thajUMQRvoCjfdXrwl4Gj4wyJiyblmxSHmMmg8ei9Hs849cwSNlgjkabD2hwPrYSIDn0QhxIRjYsMLW8rY2BoHpQUpUssie2jtVIVJJQ7BRnoqTEwD0pRmwK/ipdutoHtJ3tDBgEbblCTZTusbIUIQikl3STAtyY9E6SAAOzQhsonnskwJjBRR90nADskwhADiy6yhnHNFI3rbSEReAaTkXukI8deKXDf/TPEGVjSPL3SxmWz1cTv/MrT+GOAMjiKKwPp3r0XRP6S2O9vEeJMWUx+OKPrvuq34L6e1+fk5Z/uChayueQZpStmdgDQygdgAtjgeURzlwDfUqja3r07tRdDjuDIYfpcT/ed7fC1ep8aswYOY5IPLfMB1/RcVdG8s7bLs4R1t+qRQNoPbfbdY0/EFb84/VectS8U87zv/DGSu3N6rD/+KesGg94v0IW7qfww/Mt1nox+uiQ0X7lAc0SkkdSOq4loXiVNO/ly3AdN66K54fFEcrAWyA3vsVhKrOzohYmXZ87a6hYkmU1p2Vbdr7XHZ2/ssOfXKBPNusfQ29i0SaoxuwcLWFPqrT/eo+6o2dxKIiSHW4dlVNV4yyedxDjQOwHqtoU6YTuw6wdTjs8z2/qo3a3icnIJRf8AJcMn4l1bJkPlue2+zVJj6xq7T9bZCD1v+a6VUkjmdz+HYZdbx2ShjnGnbB1KXIa3Ix3Nuw4Uuf4OZkZuO1jxKD0JPQ/BVg4ezZ4JvwWU5xaf7Mu6g+iynXnKNIWN8M51ruMItQmgcKLHE2uof0aIxHree+xYYAR7FUfj7DGNrXmt6Stsq+/0coHP1LUXgUGtaA739F11vYnLNZI9FdEydo+gfCZU+tBET93G0JFo5OyBC6EwSm2pOUDibpDHoBFk9t0Jq9k7ruymQiRJJykjRaWtMDacIXO32TGCeqdprZCnFDdMY77tMDVpE2mQATa6HdECOlFC3aytbxFxFicN6eczLfytvlA9SplJRWscYuTxHFP6UDmeXpzmtuRjH2fb0VS8FRWn6jI3cgir+FY/H3UGa5w3DnMhY7lc0tlidYLD6rS+B8bX6fqTa252rCySlDUa1wcZ4zcZmmQRl0sjnc29k7160qBr5xnylvIwgdDy0rvxtnHDDwHkb0qLp+kQZ4dqmv5/4DS2k8rQf2k59vQe6whJs6JRSK7ktxADzNZawjDhyGvpv5Vs1rxA4UwsR+Bo/C8TrbQyJvzn3tUd2pDUJRWGG8zqHKVukzByibKHT2tIMT1u9OklxxyBx5eqrWJmPgm8p5I3qndQrToxdlPEfLbu1KJ6uzSCT6Nk3OmFEg16hG4zytIAcAe6tePwZMdPbK5lE7jZHFo7Ycc+YLI2pYe6NfRnPMnTpnlxcXC+602Tg4+OS6chxHRdA1zGLY3CFpFdaXMNRdNnai7Hip5aa67fqtq25GU0l2ZePlw+ZUMV/DbW7wMmPnAkZyf520qMNVzsKZzI3tYWu5fpCt+gcX6vkwPxsnTotRxmi3hraeB6rSVb7Mo2RLvpceNKBcYJ91s8jT2PaCyMCRpsOJ6qm6brGJ54lwJXnGunQvP1wn/ZXrCyRkMbuDtsuZto6Uk+jn/iazkfiydCRuukf0aIBJp+ozvbs6UNa74G4XPfFMVJis6WCdvlWfwo4r1Dhfhh0GNjYzIvNdLJNKCSbXVCajDWcsoOU8R6N5aGyBVngPjmDjPEmprWZEBpwGwcPWlZyKG60UlJaiXFxeMhebKEqQsABJUapGbBITUE5KZPCkA5oBFnZC5p5unVSAEiymJHqpEREUkkeqSoRaXOtCkkmMSSSSAEnTI+rUAONmhcj/pCZbotK06Bjq53ucQuuA/SuOeOGJNqGsaVAxpLSAPbcrm8p5A6/BSdyKJj8NalqfAcweC+BxtkTuoHqFJ4LxeRFq8QaW+W5jSPcLo+PmQ6BpDPPYCyIUWkeip/h3l4upaxxNmYkIhglywWxjo2wuOE/wBWjqvr/dSFxNw+7U3OIa0uuwXiwFT5/DkZE0b8/U3zFhvk5Ryj7Ls7sMSt5a3Kr+t8KOymEwySMef3eiVdmdCnDTkHFfh9i5DWTszBjvjHJTY75h69VUWcPnTJbbmNfyu5gSyl0PXuCeJzK4R3NH/m3WFpXhdr+pztZNGYmcwBLj0XUrWc7pW6UyDRJtYzR9bpJHGvoau28C+HTMAMy8sFz+UU0qx8MeGeDoETPMaJJhuX0rYI2tIa0bAUsL7W+DeqpLklj0+M6YWhg2G2ypOtYnlxuoAEFdKgxXDSJZeb8qoGtDzA8d1zvVjNlj0oep4vnRSxuscw7LmepaKzBm8zHbMPU30XZZcYSCiBfutRm8PNmJPKDfULeuzDCyvWceZoeLnSmR7nB7jZo0rpwzpQ02F0ONMGCUU6SrdXotrNwfjOcXGLld6jZFjaCcUinybe9rZ3GSpX8NU7gqCPJ/EQZMnmE2519VbNJxXwNaHbgd0+LhuIAqz6rZxYxYN1jKemqjhQPEzHdkalpcTR/aW3+Kt+JocUGg+SQKAFgKv8fPbjazoc8jbY17uYevRXPGzoc3Bf5AoFt0qsl+qCmP7NmH4R5n9UcbOwS6mZDSyvfsu7O2XAODsKSfxIxBEN2Oa9xH6r0A/crfxdxmXmJKaaIzuK9VCRRpTuGxpQLoRxMHZN2tEQgIsdFT6Hoxf2QVaertBv9lJD5ERXdJMkqGWhJJJMYkkkkAJOEySACFKo+Imj/jcbEzWNt+NIL+LVsWNqsH4vTp4qsltj5G6yuj7QZrTNwmmjkXG8zxpTxVhxJtVzweAj/r2Kt/xLHfYtVu17S3aviuxGytY4WWg/3vZVzgnRszh7iLJjnhfHFmw20uHVzD/sV5kONR61vMUzosIFg1a2P4EzxBzQAe4Wvx5G72VnQZggbV7JRxPkh7gmaOCQXMBWS3GgxWEta2x3pQT8RRQNN8raVJ4n8QY8Jj+WQE9gFq5RS4ISb7LbPK10leYN+yeNoAsKmcBajJxHBNnTPLiH8jQTsFeIMcyyeW0WVjJazXpG0hka3QskGzt0VA1OIOLqGxV616eHStOjwm15zxclfyVInDshxY3qegVWdpEw5TZXpoyCQk2LmIshZM7HNsEUei0erZbsFnnB9UaIQkDNy7TxI3do+ViyaWQ7YAhBo/EEWUwAutb9jopBYrcI5A1OLp1GyFLNByuroFs/oYL6dlhzvDne3qnhnJnNPE5vNmaRG38xe8/agthwVLJKyYOJIa2lDxtiyZmtY7oonyux4TTWC93Hr/BZvDOFJpeA+WYcskvRh7KpvhDqWay8eFOjg65qOpPF8g5Gk+p/7K6c7qtDwHpZ0zh+N0gqbJPmuv07LfONld1EcicN8/abGKx1OehUC1RgximKdya0xoEt2NKNvSiFKlSWBhAkpCz+aSWktFjSSTb312VjHSQcxLtijuupQAkkPPbqrZJ52QASSYWa6p0AUjiLRH42f5kf0xyEuYQOh7ha7MLi6KSSP64nAB47A7FXzWYhLgSHl5nMpwHwqFrGt4EWK8eYOaunovMvh6z4PTos9oYyfz+Ru/3WFlao1gO6gycr9lzhxoi1V9W1F4bbXd/4LBo0TQuIuITDC79oRfYFcw1nU5cuZwLybPdZ+v573yuJca+VhcN6X/XeqsY+xCHAOdWy2hEUp/DovhHNkaTpuVNkhwxZHBzT+6e6v+NxXjyB78edhPq110tLE7H0vGbisDfKDKodwuScTvk4U1t2ZgvLMad3O0NP0i+oIT/H7coTtS4Z1fWOJnZMxJkLnHqSeqwsbW3Nma9j9weo7LmuPxPDqp8xswY8/mYT0W0i1byIDySM5z6lS62V+SOHQZc1uU4vf1O5VV4yx5M3H5YDXKCTXdaOHNlyJBLPnyubdtjYaH3W+jyI5IRZ2rr139Ffphn+RMpmi6lNh5Bjeao0r7p2rFzBRsKka3hCDLEzB9Dj27Lb6RK5rBzFQ0UpF3Zlh7b6pnyWSVq8aU0LKynzFoslSiWzHhij/HZGSN5CeUfYLb8LcNSa7qodMCMaEh0h7fH3Wo0uWHIZzBxLnOJ+d113hnAbpuiwRlvLI8eY/bez/wALWqHtLkm2z0jwbJwDWhrQAAAAB2CBE89EJNleh0jzwXflNKFSSnoFGhCYJ3KYpz1TJsaHS7JJEikvYAHnbZJJ/S63SUgWDm+qgLCYvJ9EN0ktNFoXMABQB+yYuvt/FMkkIcOrskd90ySAD5gAEQIPdRJJ6PSUrXO4c0d+T+KfpuK6a+bmLO/ws9r/AFT8wPRS4p9jUmujkOrh2NmZWK7YxyOaPi1VNQxnSA329Fd+P4Dh8QSOo8uQxsgP8D/JVKWRrui86yOSZ3Vy1FM1HSopJg2YkW4WPZZkWqYmjvjx8aFkbCLAHVx7ElHq+SyDzXPYHOH5SqJnZGfPN5kOM6RzDsAFpDoznrZ06CfL1BjHkln7wB6hYGscM5ubjTY3lGSOQW29z9lXsLjPX2xtxf6onx5GNsHyyeZBn8V8RRuBnfPjn+6Hxlv81XJSgn2aDVeDNX0KV0kkLwyrBaEOFpuoyuY5zZgOp9wtl/1rrMhLJJ45h0p7QUWNxDnNfRdHfoGp62H4l8M7H0zLMQkJc30AG9KbJysvEcWs5qroeikx+JtS5S38J5lC9m0tZqPEWXmyeUzS5Q4dX9gk9+kOGG0OoMyWeXICS4dD2Wz0t7HQAGrbsVV8Zs4p0oLfZWLSG8jLcK23WUioNosEDuUbrJgjfm5EOPHu6V7WD7mlrmS7UFZvD/DOocS4v7kNzO29On8Uq47Ic5cHTY+GdIxJWTM0/GE7ABzhg6jus9SSkkqNeiopHE232A42UJNAlO4gWVE6QEUE2/gwXGzuhJHqo5JOVY0k5B9UCMrmHqkXD1CwfxHuf1TicbJD0zgUiaFrDGQB6p/xAIrdLBaTudbbv7JKFsgISRgFkvr7JwbQB3X3Tt6BUIJJJDzAIAJJJJACSSTBwKAHRBxJ3pCkgCm+KGmPn0yDUI227FdUldeQ/wDK5LLM2+ZjqN1RXonIx483Hkxp2h8UrSxwPcFefeKuH5uG9Zkw3hxjsuieehZey57q95N6p/DTZeJLmvDdgB3C3um6Nj48IcIgXVuSEGnYgme11H7KwOjEcYAC4pSa4OyEU+R8NvLGA9rQQPpd3Cly83HbjGLOxGSt7PIDhS1GfnPigcyIi/Vc213X9VxnPayaTckEXsrrm3waPIl0zuGeEdUk8x2AyJ9E3EeWytWdE0rAmIxmc7OgbfRc9/6m1Tm5XC/SnLa6XrGpSloIa2zv3Wz1Cd0X0XRuE+dwLwI4wK5R6JS4MLAI42Bo70OqbCyZTGDLV/zWVdiz3WEptkvGabUMNrSHNYNk2MeQX6BZWqB3MzkF0LIWAZCHm9hW6EZM2TchrWWO+y614S6O/H0ufVZrDss8kYPZg7/c/wAly/hHh7K4t1iLAibywsp08nZrO/3PQL0NBjQ4OLFjY7OSKFgYxo7AdF1Uw5057JfBPJLihITpnGgukwIpT9Pysd7uUKaYm/ZYkzq2QxkE0v6rDkk36qSd9WsGSSkgHkmDeu6H8R8rFmk/VYzpaPUpJiNo3Jooxk+61HnG+pRtnI7o0em4bkfCS1bcgjukkI6JaSSS0GJOHEJkkAScw9Uzzt1Qg8p6JE2gBA13SB3TJXXygCQkiullODai6p2upGBhIqn4jcMM1/RX5EYa3LxAXsd+83u1WsEHdRZo5sOdpF3G7+SmXTHHs89aZkOxcgB45ebseytTXtLQ152Wh4v084Tvx+I13JdyMaOh9VgYGtNfGJBJuezupXBKKktR2Rl68MtGTpEeVQYKvuFqM7wzxctpklyXtJ3FBZmDrrLoud7khZs3EMPJ2FepWai4mvunwc51HwulxH+ZBMJgT06FR4/DMuHQfzWOthXtmsY2TLXmg+gJWPnZ8H5fpPuVTbfBP6o0cOKW0LIpHkyNYA4uIA3tDk50UMgkFH2BWtnzjM1zvygH9EKBMrESZGWHW++dq1+TJJORHG23vNNrekE0/KTyW9zjQaBu4re6Npn4Nvmym5njcdm+wVvIoiOyZ07wW05uBp2oX9Urns53HvsV0WU7BUDwszoIxm4TngTPLZGtPcAUVfnm9qXXS9ic9qyTRGhcUR2UZO9laIhEMzt69FgzP6krJmdsVhTOoIYGJkEUsGUj9Fkzus/CwZnbHfqkBjSusrHf1Urz/BQuNm0hMQJ9U5ft1QpIEP5jvVJRuO+ySQ8OrpJgbFpb30Wgx0k1+yQ+EAOkkkgBJJgkSR0pADpJJIAdpoons82ORo6ljvtsgulFqmY3TtA1HOeQOSPy2k+rtlMumNdo5lksbK17HAFpsEFc14n4Zy9JkOZp4c/EBLjH1LPj2XS5fqZ70sZzWyNLHCwey8qFjiz1J1qSONniaVg5fMddbG9/+FjP4kyZDfOeX1tWPjnhHGMxnjZ5fN3Zt+qoM2lZWM4+XMx7fQjsutOMlpxSjKLw3rNdnoOY+ievwpHa/Ka5n83vaqUj8sEjlbfsUUGNqOVIGsIaD7dE/VC2XRaX600xnncNzzG+qhhz8nNn8rAjdK4nc1s0e5R6NwlG8iTOkfKSd2nYK5YeFjYMQZBE1jfRoUSml0VGty7MXSNHGEBNO/zckjd3ZvsFu4hdEqJjCa6qdv0Bc8pazqjHDT53FEvCfGGg5YeWxSvfE+uhBIXpHGyBlY0czTbXtDl5F8X3FmJpmSx1OiyNv0XpTw91mPP4P0rIklaHSQNG56kCiu+j/icF7/YtB2Khl2BUpcCLUMxtboyTMSc00rXzHqs6c9Vrcg9UmMw53LBlfZU+U80aWG8qWIjeQOqAVRTOcSUyEISbujYLKZzaKABqykkkkB1Fj+xTF9O62EING05Nm1Yxy82aKXMa6lCkgCZptoKbnp1Hoo7I7lK+5T0ekhdtYKAONH6jaYe5q+nuiEZLuU2HHoKtx+wTUWxNi5yR7oow95Aa0uPsETomwV51RE9Gn6nu+GjolkRZ7oj5cn4GMj87t5D9ugWiq3shzJH4s7A3mEURcaBkd1+ypvjPqf8AU3h1K/m3fkMLiNrAIW80rGhOQ/LOXJlGE8oc91/V3KrfjxpWRq/hrmsxWc8kIc7lHeqP8rTsrSTQQn+yK5Fktnha9psOAISJoqocBcQDVuH8WQn62NETx7jZWkSh1Ar5+UcbR7kXq0xNVxo8uB8bxd/wXMtb0p2HkOby/T2XVJQXA0AqnxHguljJDbVwlhM47yc9dit8wW3ZbzT8ONjRTQb9lrpmOjfRHRbTT5HOaAtZPgxSNvjsDOgWwiG1nusHGHS+qzA6hSybLSROXDoLCYSkd1A6Q0sDVNUi07GkyJHUGtv5SS0beFG8XNSbM3Fwmm3Nd5hrt2C7rwDDMPDbTmhjXPjceQPG3QFeaA2firiqFj9/NlDnejWg9F690LT2YvCmBjsFAB7/ANKAXseNXkTyb5bIx8bVM/EaHSefitPSvrj/ANwtlFxDlBoc+OPIZ3ewrQ5Wbqmn5cnJJE/Gd9bWyEbNIulLi5OBl/WHv0/I/fYbYT/JdEoGSkb9utYmRVvMRPZ+38VFObBINj+a1c0WQxvPk4wlZ/8AcYxsH5Cijje4F2HOHjuGmiPlp2WTgWpkuQ6uqw5Xbp35UnNyTR2f/Tsf/wCT/ogsTGmODj+70cPsVm4tFamCSmBQutpog2kHbqHo8DFg7IrLuqEJJiEkkkgDpqSG6O26cuawftHct9upP2V4xvgVhE1rn/lBKMQS8gkMTYGf4mQa/RvVKMOyncmOyTLd+88csQ/9qtV72T7oZrOY025COvJ0HyegTsaJXckQdM/92EXXy47BZE8OLhx82pZfmObuII9mj7IIsjI1DFe/E5MTDYDfIPqKtQXZLkC5keJtkSiNx/8AJg+p5Pu5TwRZkuzGs0+Jw+ZH/wCqDQ3xfh8jI8kN8sbPJtxNdbUXC0jp5srKkJJr8xNlW4vkn2/pNjyQx5TsfBgL8jfmnyDZCqHEUmdLq5xZs4ydttgDXorbpJH4jLyT6bfcqiOfJqXFmVICfLiLiPfsta0k2Q+UWbQdPZgaOY2OLnnnc4n1r/lbDUmNzNLy4CA4FscleoLaKxtGBkxGsN/Vzj/v9Fm4rPNMTP8AHwy37tUS/wCxpnlYYcvh/wAe5mjyAs0/Pe6XGcegN9Fdosu20TXotz4wcFSa7wlkapiR82dpTxksI6lvRw/T+S53w1xDHrGnMfzAzMFPC8jzKfWbaPV8S3Y4XFuTQ36LEzPLmYRYtYYy3NbROywszMexpcwrhSOttGl1fTh5hc1v6KHBgc1wFVSLJ1IyOPMCT6qXCnaSCVryZm0ijDaJ/VSOIBO3Tusds23ognyaafRIAp8tsbSSQABdlc64t17+sHmKN37Fuw/9Xus3ifXnPLsaB1D+8R39lT5WSZEjY2/meQ0fJW9df1nPZZxhd/C7h8vmGpyt/tpOWP8Ayt6n9f5L05EPIw8GD/8ASL69PqBXL+G9Fh0/Hw8aIDkgjEQI7kAWf1JXVcqLkzsaO6EeA4H9F7FSyCPNsfJWNelifnQ4xFOdDfyA4t/2R8Kxsf8AiMGVjTbTsd+i1/FT/K1jRJegeZIXH/MGu/1Wwha7TNWgnOzZKcf5FP8AqI7JOHIvwmpZWC6SRj23yU41+ikhki1TMnw8zH/DZUN1PBtzb+ifXP8A5frOPmsGzup9a6/wWbmY7INdxcxn9nkt5CexP/dJZ9HuGrkfPECZWR6jijbzI93N+fRG2DCz2gYs7ef/AApt6+O4+ybDjGm8TT452ZNdffcLU5EDI+JX40pcI3u+mjVWLCWDUjYT40+KKk542/8A5R5kZ/8AcNwoCCGh7oXBn+JCfMZ/uE7dYzdP1Run+Y2aCSg3zt9j2tZ2RFgNymsbJLp2ZJuCz8jiocUUpMwW05nPG5sjR1LTdfPonWRLFJjyVm44cR/9Ti7OHyExiEzDJBI3JYOroxT2/wCZv+yzcM6KUiBJMWkCx9TexCSyeoo6lHhufF50krceD/Ed1d8BC3OgxiBgsZHzbGeb8x+O6SS7Irgyk3pJmNgwQybKbJnTSflDzTf0Ra7k5WPpjAyV2K+SqZCOWu53SSTita0mT4ZjnGi03QGue28iYUXu3cb36lZLpBgcNMadnzf6/wDCSSvOgBa78Nw47l2L2k/JOyWkM/BaBPKfzSGv9EkkfP8A0RjNyxh6PkZBPckH4CrfBeK7KZlZThfOav8AikkqfTBFn0QCKPDB/vSPH8P+VPhO5HaY/wBHyRH9UklEhoGLHjlzc/TZWt5JmPZRFiivKHFvDuR4c8byxsaW6flPL4/Qb/U37H+BCSS5/KinHTbxpNSw30eS18TXjdrhYKxMqVtEX2SSXjZyesnwaaZoe/8A5WVjRhjQUklrnBKZlulDW9VoNf1jyozDCfqOxI7JJJRjyTOT6KVO4ueSe6sPAGhs1PXo552EwYjTOQRs4joP1SSXZBbwcs3wd10yFrcnCx+YF5YHOAO4LnWVedaJj1PIcNxFgkH5JpJJelHpI4H2yo8a4jiMKQdYcoD4/ZtW01tjZNMxcgD03+Qkkm10L+h66wZeh42SBu3lN/IpTZLvxHDGLkD88PKQfSjSSSn4Mwtbb+307VGV9fLZHqP+ytRxx/4XOxc2Kht19wbH80klLGkR6lF+Jbj58fYiiPfcLbcRRtdjafngb7b/AMUklCGzB4oyXRz4uZC4tIG5aevdNrkbsUYup4bvK838xbtvVpJIj8EzZSTsjEB1HkHnj6MmMbO9nBJJJLEVp//Z" alt="Kunal Jain" width="132" height="132">
     <div>
       <h2 id="abouthead">Built by Kunal Jain</h2>
       <p class="role">CA Finalist · Article trainee, Transaction Advisory, IRA Consulting &amp; Advisors LLP, Mumbai</p>
@@ -360,22 +386,23 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
   </div>
 </section>
 
-<footer class="site"><span>© 2026 Kunal Jain</span><span>For learning and discussion. Not legal or investment advice.</span></footer>
+<footer class="site"><span>CapView · © 2026 Kunal Jain</span><span>For learning and discussion. Not legal or investment advice.</span></footer>
 <script>
 (function(){
 "use strict";
 const CR=1e7;
 const FOUNDER_C=["#1F3A93","#3E64D1","#6E8FE6","#A3B8F0","#2C4A6E"];
 const POOL_C="#7C8C9B";
+const ADV_C=["#3F8F99","#7A9A3A","#B0705A","#5C6BC0"];
 const INV_C=["#E0A030","#E0674A","#9A5BD8","#22A68F","#C83E78","#5E9C2F"];
-const EXAMPLE={company:"Example SaaS startup",founders:[{name:"Founder A",shares:6000},{name:"Founder B",shares:4000}],pool0:0,seniority:"stacked",exit:600,
+const EXAMPLE={company:"Example SaaS startup",founders:[{name:"Founder A",shares:6000},{name:"Founder B",shares:4000}],advisors:[{name:"Mentor",pct:1,at:0}],pool0:0,seniority:"stacked",exit:600,
   rounds:[
    {name:"Seed",investor:"Seed fund",pre:12,inv:3,pool:10,lp:1,part:false},
    {name:"Series A",investor:"Series A fund",pre:60,inv:15,pool:12,lp:1,part:false},
    {name:"Series B",investor:"Series B fund",pre:200,inv:50,pool:10,lp:1,part:false}]};
 let S;
-function load(){try{const s=JSON.parse(localStorage.getItem("captable-v1"));if(s&&s.founders&&s.rounds)return s}catch(e){}return JSON.parse(JSON.stringify(EXAMPLE))}
-function save(){try{localStorage.setItem("captable-v1",JSON.stringify(S))}catch(e){}}
+function load(){try{localStorage.removeItem("captable-v1")}catch(e){}return JSON.parse(JSON.stringify(EXAMPLE))}
+function save(){}
 S=load();
 
 const $=id=>document.getElementById(id);
@@ -395,11 +422,23 @@ function compute(){
   const p0=Math.min(Math.max(num(S.pool0),0),60)/100;
   const pool={key:"pool",name:"ESOP pool",type:"pool",color:POOL_C,shares:p0>0&&fTot>0?p0*fTot/(1-p0):0};
   holders.push(pool);
+  const advs=(S.advisors||[]);
+  function grant(at){
+    advs.forEach((a,j)=>{
+      if(num(a.at)!==at)return;
+      const p=Math.min(Math.max(num(a.pct),0),20)/100;if(p<=0)return;
+      const T=holders.reduce((s,h)=>s+h.shares,0);if(T<=0)return;
+      const sh=p*T/(1-p);
+      holders.splice(holders.indexOf(pool),0,{key:"a"+j,name:a.name||`Mentor ${j+1}`,type:"advisor",color:ADV_C[j%ADV_C.length],shares:sh,grantedAt:at});
+    });
+  }
+  grant(0);
   const snap=()=>{const m={};holders.forEach(h=>m[h.key]=h.shares);return m};
   const stages=[{label:"Founding",shares:snap()}];
   const rounds=[];let error=null;let prevPrice=null;
   S.rounds.forEach((r,i)=>{
     if(error)return;
+    grant(i+1);
     const pre=num(r.pre),inv=num(r.inv),P=Math.min(Math.max(num(r.pool),0),60)/100;
     if(pre<=0||inv<0){error=`${r.name||"Round "+(i+1)}: pre-money must be above zero.`;return}
     const Spre=holders.reduce((s,h)=>s+h.shares,0);
@@ -460,6 +499,7 @@ function renderInputs(){
     <label class="field">Shares<input type="number" min="0" step="1" data-f="${i}" data-k="shares" value="${esc(f.shares)}"></label>
     ${S.founders.length>1?`<button class="icon" data-rmf="${i}" aria-label="Remove founder ${i+1}">×</button>`:"<span></span>"}
   </div>`).join("");
+  renderAdvisors();
   $("rounds").innerHTML=S.rounds.map((r,i)=>`<div class="round">
     <div class="round-head"><input type="text" data-r="${i}" data-k="name" value="${esc(r.name)}" aria-label="Round name">
       <button class="icon" data-rmr="${i}" aria-label="Remove ${esc(r.name)}">×</button></div>
@@ -475,20 +515,33 @@ function renderInputs(){
     </div>
   </div>`).join("");
 }
+function renderAdvisors(){
+  const opts=[["0","At founding"],...S.rounds.map((r,i)=>[String(i+1),`Before ${r.name||"Round "+(i+1)}`])];
+  const A=S.advisors||(S.advisors=[]);
+  $("advisors").innerHTML=A.length?A.map((a,i)=>`<div class="adv">
+    <label class="field">Name<input type="text" data-a="${i}" data-k="name" value="${esc(a.name)}"></label>
+    <label class="field">Stake %<input type="number" min="0" max="20" step="0.05" data-a="${i}" data-k="pct" value="${esc(a.pct)}"></label>
+    <label class="field when">Granted<select data-a="${i}" data-k="at">${opts.map(([v,l])=>`<option value="${v}" ${String(num(a.at))===v?"selected":""}>${esc(l)}</option>`).join("")}</select></label>
+    <button class="icon" data-rma="${i}" aria-label="Remove ${esc(a.name)}">×</button>
+  </div>`).join(""):`<p class="hint" style="margin:0 0 10px">No mentors yet. Typical grants are 0.25%–2%, usually vesting over 1–2 years.</p>`;
+}
 document.addEventListener("input",e=>{
   const t=e.target;
   if(t.id==="company"){S.company=t.value}
   else if(t.id==="pool0"){S.pool0=t.value}
   else if(t.id==="seniority"){S.seniority=t.value}
   else if(t.dataset.f!=null){S.founders[+t.dataset.f][t.dataset.k]=t.dataset.k==="shares"?t.value:t.value}
-  else if(t.dataset.r!=null){const k=t.dataset.k;S.rounds[+t.dataset.r][k]=k==="part"?t.checked:k==="lp"?num(t.value):t.value}
+  else if(t.dataset.a!=null){const k=t.dataset.k;S.advisors[+t.dataset.a][k]=k==="at"?num(t.value):t.value}
+  else if(t.dataset.r!=null){const k=t.dataset.k;S.rounds[+t.dataset.r][k]=k==="part"?t.checked:k==="lp"?num(t.value):t.value;if(k==="name")renderAdvisors()}
   else if(t.id==="exit"||t.id==="exitRange"){S.exit=num(t.value);const o=t.id==="exit"?$("exitRange"):$("exit");if(o)o.value=S.exit;renderExit(compute());save();return}
   else return;
   save();renderOutputs();
 });
 document.addEventListener("click",e=>{
   const t=e.target.closest("button");if(!t)return;
-  if(t.id==="addFounder"){S.founders.push({name:`Founder ${S.founders.length+1}`,shares:1000});save();renderInputs();renderOutputs()}
+  if(t.id==="addAdvisor"){(S.advisors||(S.advisors=[])).push({name:`Mentor ${S.advisors.length+1}`,pct:0.5,at:0});renderAdvisors();renderOutputs()}
+  else if(t.dataset.rma!=null){S.advisors.splice(+t.dataset.rma,1);renderAdvisors();renderOutputs()}
+  else if(t.id==="addFounder"){S.founders.push({name:`Founder ${S.founders.length+1}`,shares:1000});save();renderInputs();renderOutputs()}
   else if(t.dataset.rmf!=null){S.founders.splice(+t.dataset.rmf,1);save();renderInputs();renderOutputs()}
   else if(t.id==="addRound"){
     const last=S.rounds[S.rounds.length-1];const names=["Pre-seed","Seed","Series A","Series B","Series C","Series D","Series E"];
@@ -497,9 +550,10 @@ document.addEventListener("click",e=>{
     S.rounds.push({name:nm,investor:`${nm} investor`,pre:Math.round(post*3),inv:Math.round(post*0.75),pool:10,lp:1,part:false});
     save();renderInputs();renderOutputs();
   }
-  else if(t.dataset.rmr!=null){S.rounds.splice(+t.dataset.rmr,1);save();renderInputs();renderOutputs()}
+  else if(t.dataset.rmr!=null){const ri=+t.dataset.rmr;S.rounds.splice(ri,1);(S.advisors||[]).forEach(a=>{const at=num(a.at);if(at===ri+1)a.at=0;else if(at>ri+1)a.at=at-1});save();renderInputs();renderOutputs()}
   else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));save();renderInputs();renderOutputs()}
-  else if(t.id==="csv"){downloadCsv()}
+  else if(t.id==="xlsx"){downloadXlsx()}
+  else if(t.id==="pdf"){printReport()}
   else if(t.dataset.tab){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b===t?"true":"false"));document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+t.dataset.tab)}
 });
 
@@ -607,14 +661,57 @@ function renderHero(M){
   $("tick3").innerHTML=big&&big.poolCostCr>0?`<span class="muted">${esc(big.name)} effective pre-money</span><b>${cr(big.effPre,1)} vs ${cr(big.pre,0)} headline</b>`:`<span class="muted">Founders own</span><b>${pct(fEnd)}</b>`;
 }
 
-function downloadCsv(){
-  const M=compute();
-  const rows=[["Shareholder","Type",...M.stages.map(s=>s.label+" %"),"Shares today"]];
-  M.holders.forEach(h=>{if(h.shares<=0&&h.type!=="founder")return;rows.push([h.name,h.type,...M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const v=st.shares[h.key];return v!=null?(v/tot*100).toFixed(2):""}),Math.round(h.shares)])});
-  rows.push([]);rows.push(["Round","Pre-money (₹ cr)","Investment (₹ cr)","Post-money (₹ cr)","Price per share (₹)","Investor stake %","New pool shares","Effective pre-money (₹ cr)"]);
-  M.rounds.forEach(r=>rows.push([r.name,r.pre,r.inv,r.post,r.price.toFixed(2),(r.invPct*100).toFixed(2),Math.round(r.X),r.effPre.toFixed(2)]));
-  const csv=rows.map(r=>r.map(c=>{const s=String(c);return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s}).join(",")).join("\n");
-  const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent("\ufeff"+csv);a.download=(S.company||"cap_table").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")+"_cap_table.csv";document.body.appendChild(a);a.click();a.remove();
+function fileName(ext){return (S.company||"cap_table").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")+"_CapView."+ext}
+function downloadXlsx(){
+  if(!window.XLSX){alert("The Excel export needs an internet connection. Use Save as PDF instead.");return}
+  const M=compute();const X=window.XLSX;const wb=X.utils.book_new();
+  const typeName={founder:"Founder",advisor:"Mentor / advisor",pool:"ESOP pool",investor:"Investor"};
+  const live=M.holders.filter(h=>h.shares>0||h.type==="founder");
+  function sheet(rows,widths,fmts){
+    const ws=X.utils.aoa_to_sheet(rows);ws["!cols"]=widths.map(w=>({wch:w}));
+    if(fmts)Object.entries(fmts).forEach(([col,z])=>{for(let r=1;r<rows.length;r++){const ref=X.utils.encode_cell({r,c:+col});if(ws[ref]&&ws[ref].t==="n")ws[ref].z=z}});
+    return ws;
+  }
+  // Summary
+  const last=M.rounds[M.rounds.length-1];
+  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  const sum=[["CapView: cap table summary",""],["Company",S.company||""],["Prepared",new Date().toLocaleDateString("en-IN")],[],
+    ["Founders' combined stake today",fEnd],["Total raised (₹ cr)",M.rounds.reduce((s,r)=>s+r.inv,0)],["Latest post-money (₹ cr)",last?last.post:""],["Latest price per share (₹)",last?Math.round(last.price):""],["Liquidation seniority",S.seniority==="pari"?"Pari passu":"Stacked, latest round first"]];
+  const ws0=sheet(sum,[34,30]);if(ws0["B5"])ws0["B5"].z="0.0%";X.utils.book_append_sheet(wb,ws0,"Summary");
+  // Cap table
+  const ct=[["Shareholder","Type",...M.stages.map(s=>s.label),"Shares today"]];
+  live.forEach(h=>ct.push([h.name,typeName[h.type],...M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const v=st.shares[h.key];return v!=null?v/tot:""}),Math.round(h.shares)]));
+  ct.push(["Total","",...M.stages.map(()=>1),Math.round(M.total)]);
+  const f1={};M.stages.forEach((_,i)=>f1[2+i]="0.0%");f1[2+M.stages.length]="#,##0";
+  X.utils.book_append_sheet(wb,sheet(ct,[24,18,...M.stages.map(()=>12),14],f1),"Cap table");
+  // Rounds
+  const rd=[["Round","Pre-money (₹ cr)","Investment (₹ cr)","Post-money (₹ cr)","Price per share (₹)","Step-up (x)","Investor stake","New pool shares","Effective pre-money (₹ cr)","Founders before","Founders after"]];
+  M.rounds.forEach(r=>rd.push([r.name,r.pre,r.inv,r.post,Math.round(r.price),r.stepUp?+r.stepUp.toFixed(2):"",r.invPct,Math.round(r.X),+r.effPre.toFixed(2),r.fBefore,r.fAfter]));
+  X.utils.book_append_sheet(wb,sheet(rd,[14,16,16,16,18,11,13,15,22,15,14],{1:"#,##0.0",2:"#,##0.0",3:"#,##0.0",4:"#,##0",6:"0.0%",7:"#,##0",8:"#,##0.0",9:"0.0%",10:"0.0%"}),"Rounds");
+  // Exit
+  const invs=M.holders.filter(h=>h.type==="investor"&&h.shares>0);
+  if(invs.length&&last){
+    const exit=fin(S.exit)&&S.exit>=0?S.exit:last.post;const {out,conv}=waterfall(M,exit,S.seniority);
+    const ex=[["Exit value (₹ cr)",exit],[],["Shareholder","Ownership","Payout (₹ cr)","Share of proceeds","Takes","Return (x)"]];
+    live.filter(h=>h.shares>0).forEach(h=>ex.push([h.name,h.shares/M.total,+(out[h.key]||0).toFixed(2),exit>0?(out[h.key]||0)/exit:0,h.type==="investor"?(h.part?"Preference + shares":conv[h.key]?"Converts":`${h.lp}x preference`):"Common",h.type==="investor"&&h.invested>0?+((out[h.key]||0)/h.invested).toFixed(2):""]));
+    const ws=sheet(ex,[24,12,14,17,20,11],{1:"0.0%",2:"#,##0.00",3:"0.0%"});X.utils.book_append_sheet(wb,ws,"Exit waterfall");
+    const totInv=invs.reduce((s,h)=>s+h.invested,0);
+    const vals=[0.5,1,2,3,5].map(m=>m*totInv).concat([last.post,last.post*2]).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
+    const founders=M.holders.filter(h=>h.type==="founder");
+    const se=[["Exit value (₹ cr)","Founders get (₹ cr)","Founders' share","Mentors get (₹ cr)","Investors get (₹ cr)","ESOP gets (₹ cr)"]];
+    vals.forEach(v=>{const w=waterfall(M,v,S.seniority).out;const sumT=t=>M.holders.filter(h=>h.type===t).reduce((s,h)=>s+(w[h.key]||0),0);const fg=sumT("founder");se.push([+v.toFixed(1),+fg.toFixed(2),v>0?fg/v:0,+sumT("advisor").toFixed(2),+sumT("investor").toFixed(2),+(w.pool||0).toFixed(2)])});
+    X.utils.book_append_sheet(wb,sheet(se,[16,18,15,18,19,15],{0:"#,##0.0",1:"#,##0.00",2:"0.0%",3:"#,##0.00",4:"#,##0.00",5:"#,##0.00"}),"Exit sensitivity");
+  }
+  X.writeFile(wb,fileName("xlsx"));
+}
+function printReport(){
+  document.querySelectorAll(".tabpanel").forEach(p=>p.dataset.wasHidden=p.hidden?"1":"");
+  document.querySelectorAll(".tabpanel").forEach(p=>{if(p.id!=="tab-how")p.hidden=false});
+  $("printHead").innerHTML=`<h1>${esc(S.company||"Cap table")}</h1><p>Cap table, round economics and exit waterfall · prepared with CapView by Kunal Jain · ${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</p>`;
+  const restore=()=>{document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.dataset.wasHidden==="1");window.removeEventListener("afterprint",restore)};
+  window.addEventListener("afterprint",restore);
+  window.print();
+  setTimeout(()=>{if(document.querySelector('.tabpanel[data-was-hidden="1"]:not([hidden])'))restore()},1500);
 }
 
 renderInputs();renderOutputs();
