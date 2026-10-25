@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>
+try{if("scrollRestoration" in history)history.scrollRestoration="manual";if(location.hash)history.replaceState(null,"",location.pathname+location.search);}catch(e){}
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CapView: Startup Cap Table, Dilution & Exit Simulator</title>
@@ -227,6 +230,8 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
 .quip{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--brand-soft);font-size:14px;display:flex;gap:10px;align-items:center}
 .quip svg{flex:none}
 footer.site span:nth-child(2){font-style:italic}
+.panel-c.ghost{border-style:dashed;box-shadow:5px 5px 0 var(--line);border-color:var(--muted)}
+.panel-c.ghost p{color:var(--muted)}
 .ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
 .empty-card{display:flex;gap:14px;align-items:center}
 .empty-card svg{flex:none}
@@ -259,7 +264,7 @@ footer.site span:nth-child(2){font-style:italic}
     </div>
   </div>
   <div class="hero-art" aria-label="Ownership after the latest round in the example">
-    <span class="ex-tag" id="exTag">Example startup</span>
+    <span class="ex-tag" id="exTag">Your startup</span>
     <div class="grid-bg"></div>
     <div class="donut-wrap">
       <svg class="donut" id="heroDonut" viewBox="0 0 220 220" role="img" aria-label="Ownership donut chart"></svg>
@@ -402,7 +407,10 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
 if("scrollRestoration" in history)history.scrollRestoration="manual";
 if(location.hash)history.replaceState(null,"",location.pathname+location.search);
 window.scrollTo(0,0);
-window.addEventListener("load",()=>window.scrollTo(0,0));
+window.addEventListener("load",()=>{window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),120)});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(window.scrollY<5||!window.__userScrolled)window.scrollTo(0,0)});
+["wheel","touchstart","keydown","mousedown"].forEach(ev=>window.addEventListener(ev,()=>{window.__userScrolled=true},{once:true,passive:true}));
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute("href").slice(1);e.preventDefault();window.__userScrolled=true;if(!id||id==="top"){window.scrollTo({top:0,behavior:"smooth"});return}const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})});
 window.addEventListener("pageshow",()=>window.scrollTo(0,0));
 (function(){
 "use strict";
@@ -681,13 +689,21 @@ function pizzaSVG(shares,holders,rad){
 function viewModel(needRounds){
   const M=compute();
   if(M.total>0&&(!needRounds||M.rounds.length))return {M,st:S,user:true};
-  return {M:exampleModel(),st:EXAMPLE,user:false};
+  return null;
 }
-const tagHTML=u=>u?`<span class="live-tag user">Your numbers</span>`:`<span class="live-tag ex">Example</span>`;
+const tagHTML=u=>u?`<span class="live-tag user">Your numbers</span>`:`<span class="live-tag ex">Waiting for your numbers</span>`;
+function ghostPizza(label){return `<svg viewBox="0 0 200 200" role="img" aria-label="Empty pizza"><circle cx="100" cy="100" r="72" fill="none" style="stroke:var(--line)" stroke-width="10" stroke-dasharray="10 8"/><circle cx="100" cy="100" r="60" style="fill:var(--soft)"/><text x="100" y="114" text-anchor="middle" font-size="44" font-family="Georgia,serif" style="fill:var(--muted)">?</text></svg>`}
 function renderStory(){
   const el=$("panels");if(!el)return;
-  const V=viewModel(false);const M=V.M;
+  const V=viewModel(false);
   const sub=$("storySub");
+  if(!V){
+    if(sub)sub.innerHTML=tagHTML(false)+"Enter founders and funding rounds in the simulator below, and this story will slice up your pizza, round by round.";
+    el.innerHTML=["Founding","Seed","Series A","Series B"].map((l,i)=>`<article class="panel-c ghost"><span class="step">STEP ${i+1}</span><h3>${l}</h3><div class="pz">${ghostPizza(l)}</div><div class="worth"><span>Founders own<br><b>—</b></span><span style="text-align:right">Pizza worth<br><b>—</b></span></div><p>${["Who owns the pizza on day one? Enter the founders’ shares to find out.","Who takes the first slice? Add your first round.","How big does the pizza get? Add the next round.","And who’s left holding the biggest slice? Keep going."][i]}</p></article>`).join("");
+    const mo=$("moral");if(mo)mo.innerHTML="Moral of the story: still being written. Add your numbers and see how it ends.";
+    return;
+  }
+  const M=V.M;
   if(sub)sub.innerHTML=tagHTML(V.user)+(V.user?"Built live from what you entered in the simulator. Change any number and the slices, values and moral update.":"Showing the worked example until you enter your own numbers in the simulator. Then this story becomes yours.");
   const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
   const maxP=Math.max(1,...M.rounds.map(r=>r.post));
@@ -761,21 +777,44 @@ function svgWaterfall(M,exit,sen){
   return {svg:s,txt};
 }
 function renderLearn(){
-  const V=viewModel(true);const M=V.M;if(!M.rounds.length)return;
+  const V=viewModel(true);
+  if(!V){
+    $("learnSub").innerHTML=tagHTML(false)+"These diagrams draw themselves from your first funding round. Until then, here’s the idea in words.";
+    const q=(x,y)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="16" font-family="Georgia,serif" style="fill:var(--muted)">?</text>`;
+    $("learnA").innerHTML=`<svg viewBox="0 0 300 170" role="img" aria-label="Pre-money plus investment equals post-money"><rect x="40" y="56" width="56" height="90" rx="4" style="fill:var(--line)"/>${q(68,106)}<text x="68" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Pre-money</text><text x="118" y="106" text-anchor="middle" font-size="22" style="fill:var(--muted)">+</text><rect x="140" y="116" width="56" height="30" rx="4" style="fill:var(--line)"/>${q(168,137)}<text x="168" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Investment</text><text x="218" y="106" text-anchor="middle" font-size="22" style="fill:var(--muted)">=</text><rect x="236" y="26" width="56" height="120" rx="4" style="fill:var(--line)"/>${q(264,92)}<text x="264" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Post-money</text></svg>`;
+    $("learnTA").textContent="Post-money is the pre-money valuation plus the new investment. The investor’s stake is the investment divided by the post-money value; everyone else shares the rest.";
+    $("learnB").innerHTML=`<svg viewBox="0 0 300 170" role="img" aria-label="Headline pre-money versus what founders actually get"><text x="20" y="22" font-size="12" style="fill:var(--muted)">What the press release says</text><rect x="20" y="30" width="260" height="34" rx="5" style="fill:var(--line)"/>${q(150,53)}<text x="20" y="90" font-size="12" style="fill:var(--muted)">What founders actually get</text><rect x="20" y="98" width="215" height="34" rx="5" style="fill:var(--line)"/><rect x="239" y="98" width="41" height="34" rx="3" style="fill:var(--line)" opacity=".6"/>${q(128,121)}<text x="280" y="160" text-anchor="end" font-size="12" style="fill:var(--muted)">New ESOP shares</text></svg>`;
+    $("learnTB").textContent="Investors often ask for the ESOP pool to be topped up before they invest, so the new shares dilute only existing owners. The headline valuation stays the same while the founders’ real price drops.";
+    $("learnC").innerHTML=`<svg viewBox="0 0 300 175" role="img" aria-label="Exit waterfall"><text x="8" y="16" font-size="12" style="fill:var(--muted)">Sale proceeds, paid in order</text>${[["Sale",30,108],["Latest round",30,50],["Earlier rounds",80,24],["Founders & team",104,34]].map(([l,y,h],i)=>`<rect x="${20+i*70}" y="${y}" width="44" height="${h}" rx="3" style="fill:var(--line)"/><text x="${42+i*70}" y="154" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">${l}</text>`).join("")}</svg>`;
+    $("learnTC").textContent="In a modest sale, investors with a liquidation preference take their money back first. What’s left goes to founders, employees and anyone who chose to convert. In a big sale, everyone converts and ownership decides.";
+    return;
+  }
+  const M=V.M;
   const ref=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null)||M.rounds[M.rounds.length-1];
   const last=M.rounds[M.rounds.length-1];
-  const exit=V.user?(fin(S.exit)&&S.exit>0?S.exit:last.post):80;
+  const exit=fin(S.exit)&&S.exit>0?S.exit:last.post;
   $("learnSub").innerHTML=tagHTML(V.user)+(V.user?`Drawn from your numbers: ${esc(ref.name)}, ${cr(ref.inv,1)} invested at a ${cr(ref.pre,1)} pre-money. The waterfall uses the exit value from the simulator.`:`Illustrated with the ${esc(ref.name)} round from the example: ${cr(ref.inv,0)} invested at a ${cr(ref.pre,0)} pre-money valuation.`);
   $("learnA").innerHTML=svgPrePost(ref);
   $("learnTA").textContent=`The investor’s stake is the investment divided by the post-money value: ${nf(ref.inv,1)} ÷ ${nf(ref.post,1)} = ${pct(ref.invPct,1)}. Everyone else shares the remaining ${pct(1-ref.invPct,1)}.`;
   $("learnB").innerHTML=svgPool(ref);
   $("learnTB").textContent=ref.poolCostCr>0.0001?`In ${ref.name}, the ESOP pool was topped up before the money came in. ${cr(ref.poolCostCr,1)} of new pool shares came out of the ${cr(ref.pre,1)} headline, so existing holders effectively sold at ${cr(ref.effPre,1)}.`:`None of these rounds topped up the ESOP pool, so the headline pre-money is what founders really got. Add a pool target % to a round to see the shuffle.`;
-  const w=svgWaterfall(M,exit,(V.user?S:EXAMPLE).seniority);
+  const w=svgWaterfall(M,exit,S.seniority);
   $("learnC").innerHTML=w.svg;$("learnTC").textContent=w.txt;
 }
+function renderHeroEmpty(){
+  const svg=$("heroDonut");if(!svg)return;
+  svg.innerHTML=`<circle cx="110" cy="110" r="80" fill="none" style="stroke:var(--line)" stroke-width="34" stroke-dasharray="8 6"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="110" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="40" style="fill:var(--muted)" id="hcPct">—</text><text x="110" y="132" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">founders’ share</text><text x="110" y="147" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl">add your numbers</text>`;
+  heroDrawn=false;
+  const bub=$("bubble");if(bub)bub.innerHTML="“Enter your numbers and I’ll tell you who owns what.”";
+  $("heroLegend").innerHTML=`<span class="muted">Each owner gets a colour once you add them</span>`;
+  $("tick1").innerHTML=`<span class="muted">Total raised</span><b>—</b>`;
+  $("tick2").innerHTML=`<span class="muted">Latest round</span><b>—</b>`;
+  $("tick3").innerHTML=`<span class="muted">Founders own</span><b>—</b>`;
+}
 function renderLinked(){
-  const V=viewModel(false);renderHero(V.M);
-  const t=$("exTag");if(t)t.textContent=V.user?(S.company?S.company:"Your startup"):"Example startup";
+  const V=viewModel(false);
+  if(V)renderHero(V.M);else renderHeroEmpty();
+  const t=$("exTag");if(t)t.textContent=V?(S.company?S.company:"Your startup"):"Your startup";
   renderStory();renderLearn();
 }
 const FACE=`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#E8B48A"/><path d="M5 14c0-8 6-12 12-12s12 4 12 12c-3-4-7-6-12-6S8 10 5 14z" fill="#2B2B33"/><circle cx="12.5" cy="17" r="1.6" fill="#2B2B33"/><circle cx="21.5" cy="17" r="1.6" fill="#2B2B33"/><path d="M12 24q5 -3 10 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/></svg>`;
@@ -789,7 +828,7 @@ function renderHero(M){
   let off=0;const segs=hs.map(h=>{const len=h.shares/(M.total||1)*C;const s={h,len,off};off+=len;return s});
   const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
   const last=M.rounds[M.rounds.length-1];
-  if(!svg.querySelector(".segs")){
+  if(!svg.querySelector(".segs")||!svg.querySelector('circle[style*="stroke:var(--line)"]:not([stroke-dasharray])')){
     svg.innerHTML=`<circle cx="110" cy="110" r="${R}" fill="none" style="stroke:var(--line)" stroke-width="34"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="106" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="38" style="fill:var(--ink)" id="hcPct"></text><text x="110" y="126" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">founders</text><text x="110" y="141" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl"></text>`;
   }
   const g=svg.querySelector(".segs");
