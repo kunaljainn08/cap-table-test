@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cap Table Lab: startup fundraise and dilution simulator</title>
+<meta name="description" content="Model startup fundraising round by round: dilution, option pool top-ups, price per share and the exit waterfall with liquidation preferences.">
+<meta property="og:title" content="Cap Table Lab: startup fundraise and dilution simulator">
+<meta property="og:description" content="Model startup rounds, option pool top-ups and exit waterfalls with liquidation preferences.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2211%22 fill=%22none%22 stroke=%22%231F3A93%22 stroke-width=%226%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2211%22 fill=%22none%22 stroke=%22%23E0A030%22 stroke-width=%226%22 stroke-dasharray=%2220 100%22 transform=%22rotate(-90 16 16)%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F7;--surface:#FFFFFF;--ink:#152033;--muted:#5E6B7D;--line:#DCE1E8;--soft:#F7F8FA;
+  --brand:#1F3A93;--brand-ink:#FFFFFF;--brand-soft:#E6EBF8;--warn:#9A5B00;--warn-soft:#FDF1DC;--pos:#1E7A4C;--neg:#B4321F;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--serif:"Instrument Serif",Georgia,serif;
+  color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E131B;--surface:#161D28;--ink:#E7ECF3;--muted:#9AA6B6;--line:#28323F;--soft:#1B2330;
+  --brand:#8EA7EE;--brand-ink:#0E131B;--brand-soft:#1E2A45;--warn:#F0B95A;--warn-soft:#33270F;--pos:#5CC08A;--neg:#F07A66;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E131B;--surface:#161D28;--ink:#E7ECF3;--muted:#9AA6B6;--line:#28323F;--soft:#1B2330;
+  --brand:#8EA7EE;--brand-ink:#0E131B;--brand-soft:#1E2A45;--warn:#F0B95A;--warn-soft:#33270F;--pos:#5CC08A;--neg:#F07A66;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 56px}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:18px}
+header.top h1{font-family:var(--serif);font-weight:400;font-size:clamp(32px,6vw,48px);line-height:1.05;margin:0}
+header.top p{margin:8px 0 0;color:var(--muted);max-width:58ch}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.panel+.panel{margin-top:14px}
+.panel h2{font-size:17px;font-weight:600;margin:0 0 4px}
+.panel .hint{font-size:13px;color:var(--muted);margin:0 0 14px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.field input,.field select{color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:14.5px;width:100%;min-width:0}
+.field input:focus,.field select:focus{border-color:var(--brand);outline:none;background:var(--surface)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.founder{display:grid;grid-template-columns:minmax(0,1fr) 110px 28px;gap:8px;align-items:end;margin-bottom:8px}
+.icon{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:6px 4px}
+.icon:hover{color:var(--neg)}
+.round{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--soft)}
+.round-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.round-head input{font-weight:600;font-size:15px;border:0;background:transparent;padding:2px 0;width:60%;color:var(--ink)}
+.round-head input:focus{outline:none;border-bottom:1px solid var(--brand)}
+.round .row3,.round .row2{margin-top:8px}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-top:22px}
+.chk input{accent-color:var(--brand)}
+.add{width:100%;border:1px dashed var(--muted);background:none;border-radius:10px;padding:9px;color:var(--muted);font-weight:500}
+.add:hover{color:var(--ink);border-color:var(--ink)}
+.err{background:var(--warn-soft);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:13.5px;margin-top:10px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi span{display:block;font-size:12.5px;color:var(--muted)}
+.kpi b{display:block;font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.1;margin-top:4px}
+.kpi small{color:var(--muted);font-size:12.5px}
+.tabs{display:flex;gap:4px;margin:16px 0 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--brand)}
+.tabpanel{padding-top:14px}
+.tabpanel[hidden]{display:none}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--soft);font-weight:600;font-size:13px;color:var(--muted)}
+tbody tr:last-child td{border-bottom:0}
+tr.total td{font-weight:600;background:var(--soft)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:0}
+.sub{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.stack{display:grid;gap:10px;margin:4px 0 16px}
+.stack-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;font-size:13.5px}
+.stack-bar{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--line)}
+.stack-bar i{display:block;height:100%;transition:width .25s}
+@media (prefers-reduced-motion:reduce){.stack-bar i{transition:none}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h3{font-size:15.5px;margin:0 0 4px;font-weight:600}
+.card .hint{font-size:13px;color:var(--muted);margin:0 0 12px}
+.exit-ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:12px}
+.exit-ctl .field{width:170px}
+.range{flex:1;min-width:200px}
+.range input{width:100%;accent-color:var(--brand)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:var(--brand-soft);color:var(--brand);font-weight:500}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.payout-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;min-width:80px}
+.payout-bar i{display:block;height:100%}
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;margin-top:12px}
+.how h3{font-size:15.5px;margin:18px 0 6px}
+.how h3:first-child{margin-top:0}
+.how p{margin:0 0 8px;max-width:72ch}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;margin:6px 0 10px}
+footer{margin-top:28px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+/* ---------- site ---------- */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+nav.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.site .in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;text-decoration:none;color:var(--ink);white-space:nowrap}
+.logo svg{flex:none}
+nav.site .links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.site .links a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:14.5px;white-space:nowrap}
+nav.site .links a:hover{color:var(--ink);background:var(--soft)}
+nav.site .links a.cta{background:var(--brand);color:var(--brand-ink)}
+@media (max-width:560px){.logo span{display:none}}
+
+.hero{max-width:1180px;margin:0 auto;padding:56px 16px 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+@media (max-width:900px){.hero{grid-template-columns:1fr;padding-top:36px}}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,7vw,72px);line-height:1;letter-spacing:-.01em;margin:0}
+.hero p.lead{font-size:18px;color:var(--muted);max-width:52ch;margin:18px 0 26px}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.btn.lg{padding:12px 20px;font-size:15.5px;border-radius:10px;text-decoration:none;display:inline-block}
+.hero-art{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;overflow:hidden}
+.hero-art .grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px;opacity:.45;mask-image:radial-gradient(circle at 60% 40%,#000 0,transparent 75%);-webkit-mask-image:radial-gradient(circle at 60% 40%,#000 0,transparent 75%)}
+.hero-art .donut-wrap{position:relative;display:flex;justify-content:center;padding-top:6px}
+.hero-art svg.donut{width:min(260px,72%);height:auto}
+.donut circle.seg{transition:stroke-dasharray .9s cubic-bezier(.3,.7,.2,1),stroke-dashoffset .9s cubic-bezier(.3,.7,.2,1)}
+@media (prefers-reduced-motion:reduce){.donut circle.seg{transition:none}}
+.tick{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;box-shadow:0 6px 18px -10px rgba(20,32,51,.35);line-height:1.35}
+.tick b{display:block;font-size:14.5px}
+.tick i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.ticks{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.tick{box-shadow:none}
+@media (max-width:520px){.ticks{grid-template-columns:1fr}}
+.hero-legend{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-size:12.5px;color:var(--muted);margin-top:8px}
+
+.band{max-width:1180px;margin:0 auto;padding:44px 16px}
+.section-head{max-width:720px;margin-bottom:22px}
+.section-head h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,4.5vw,44px);line-height:1.08;margin:0}
+.section-head p{color:var(--muted);margin:10px 0 0;font-size:16.5px}
+.qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:820px){.qgrid{grid-template-columns:1fr}}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.q svg{display:block;margin-bottom:14px}
+.q h3{font-size:17px;margin:0 0 6px;font-weight:600}
+.q p{margin:0;color:var(--muted);font-size:14.5px}
+
+#simulator{scroll-margin-top:70px}
+.sim-shell{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 30px 60px -45px rgba(20,32,51,.45)}
+.sim-shell .panel{background:var(--soft)}
+.sim-shell .round{background:var(--surface)}
+.sim-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.sim-top b{font-size:16px}
+.sim-top .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+.learn{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:900px){.learn{grid-template-columns:1fr}}
+.lcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.lcard .art{background:var(--soft);border-bottom:1px solid var(--line);padding:16px;display:flex;justify-content:center}
+.lcard .art svg{width:100%;max-width:320px;height:auto}
+.lcard .txt{padding:18px}
+.lcard h3{font-size:17px;margin:0 0 6px;font-weight:600}
+.lcard p{margin:0;color:var(--muted);font-size:14.5px}
+.glossary{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.glossary details{border-top:1px solid var(--line);padding:0 18px}
+.glossary details:first-child{border-top:0}
+.glossary summary{cursor:pointer;padding:14px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.glossary summary::-webkit-details-marker{display:none}
+.glossary summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px;line-height:1}
+.glossary details[open] summary::after{content:"−"}
+.glossary details p{margin:0 0 14px;color:var(--muted);max-width:75ch}
+
+.about{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px}
+@media (max-width:640px){.about{grid-template-columns:1fr}}
+.about h2{font-family:var(--serif);font-weight:400;font-size:34px;margin:0 0 4px;line-height:1.1}
+.about .role{color:var(--muted);margin:0 0 12px}
+.about p{margin:0 0 14px;max-width:68ch}
+.about .links{display:flex;gap:8px;flex-wrap:wrap}
+.about .links a{text-decoration:none}
+footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<nav class="site" aria-label="Main">
+  <div class="in">
+    <a class="logo" href="#top" aria-label="Cap table simulator, home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="none" style="stroke:var(--line)" stroke-width="6"/><circle cx="16" cy="16" r="11" fill="none" stroke="#1F3A93" stroke-width="6" stroke-dasharray="29 100" transform="rotate(-90 16 16)"/><circle cx="16" cy="16" r="11" fill="none" stroke="#E0A030" stroke-width="6" stroke-dasharray="14 100" stroke-dashoffset="-29" transform="rotate(-90 16 16)"/><circle cx="16" cy="16" r="11" fill="none" stroke="#E0674A" stroke-width="6" stroke-dasharray="14 100" stroke-dashoffset="-43" transform="rotate(-90 16 16)"/></svg>
+      <span>Cap Table Lab</span>
+    </a>
+    <div class="links">
+      <a href="#learn">Learn</a>
+      <a href="#about">About</a>
+      <a href="#simulator" class="cta">Open simulator</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div>
+    <h1>Who owns the startup after Series B?</h1>
+    <p class="lead">Every round sells a slice of the company. Model the rounds, see exactly how founders get diluted, and find out who gets paid what when the company is sold.</p>
+    <div class="ctas">
+      <a class="btn primary lg" href="#simulator">Try the simulator</a>
+      <a class="btn lg" href="#learn">Learn the concepts</a>
+    </div>
+  </div>
+  <div class="hero-art" aria-label="Ownership after the latest round in the example">
+    <div class="grid-bg"></div>
+    <div class="donut-wrap">
+      <svg class="donut" id="heroDonut" viewBox="0 0 220 220" role="img" aria-label="Ownership donut chart"></svg>
+    </div>
+    <div class="hero-legend" id="heroLegend"></div>
+    <div class="ticks"><div class="tick" id="tick1"></div><div class="tick" id="tick2"></div><div class="tick" id="tick3"></div></div>
+  </div>
+</header>
+
+<section class="band" aria-labelledby="qhead">
+  <div class="section-head"><h2 id="qhead">Three questions every founder and investor asks</h2><p>The simulator answers each of them for any set of rounds you enter.</p></div>
+  <div class="qgrid">
+    <div class="q">
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#1F3A93" stroke-width="7" stroke-dasharray="52 100" transform="rotate(-90 28 28)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#E0A030" stroke-width="7" stroke-dasharray="20 100" stroke-dashoffset="-52" transform="rotate(-90 28 28)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#E0674A" stroke-width="7" stroke-dasharray="16 100" stroke-dashoffset="-72" transform="rotate(-90 28 28)"/></svg>
+      <h3>How much do the founders keep?</h3><p>Ownership after every round, fully diluted, with the ESOP pool included.</p>
+    </div>
+    <div class="q">
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><rect x="14" y="14" width="12" height="28" rx="2" fill="#1F3A93"/><rect x="30" y="14" width="12" height="22" rx="2" fill="#1F3A93" opacity=".55"/><rect x="30" y="36" width="12" height="6" rx="1" fill="#7C8C9B"/><path d="M44 36h4" stroke="#E0674A" stroke-width="2"/></svg>
+      <h3>What did that valuation really mean?</h3><p>Price per share, step-ups and the effective pre-money once the option pool top-up is taken out.</p>
+    </div>
+    <div class="q">
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><rect x="12" y="12" width="7" height="32" rx="1.5" fill="#152033" opacity=".7"/><rect x="21" y="12" width="7" height="12" rx="1.5" fill="#22A68F"/><rect x="30" y="24" width="7" height="8" rx="1.5" fill="#E0674A"/><rect x="39" y="32" width="7" height="12" rx="1.5" fill="#1F3A93"/></svg>
+      <h3>Who gets paid in a sale?</h3><p>The exit waterfall with liquidation preferences, seniority and each investor’s convert-or-preference choice.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="simulator" aria-labelledby="simhead">
+  <div class="section-head"><h2 id="simhead">The simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type, and your inputs are saved in this browser.</p></div>
+  <div class="sim-shell">
+    <div class="sim-top"><b>Example: a SaaS startup from founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to example</button><button class="btn primary" id="csv">Download cap table (CSV)</button></div></div>
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>Company at founding</h2>
+        <p class="hint">Shares held by each founder before any outside money.</p>
+        <label class="field" style="margin-bottom:12px">Company name<input id="company" type="text"></label>
+        <div id="founders"></div>
+        <button class="add" id="addFounder">Add founder</button>
+        <div class="row2" style="margin-top:12px">
+          <label class="field">ESOP pool at founding, %<input id="pool0" type="number" min="0" max="50" step="0.5"></label>
+          <label class="field">Liquidation seniority<select id="seniority"><option value="stacked">Stacked (latest round paid first)</option><option value="pari">Pari passu (all rounds equal)</option></select></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Funding rounds</h2>
+        <p class="hint">Amounts in ₹ crore. The pool target is the ESOP pool as a % of post-money, topped up before the round (the option pool shuffle).</p>
+        <div id="rounds"></div>
+        <button class="add" id="addRound">Add round</button>
+        <div id="roundErr"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="kpis" id="kpis"></div>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="own">Ownership</button>
+        <button role="tab" aria-selected="false" data-tab="rounds">Round economics</button>
+        <button role="tab" aria-selected="false" data-tab="exit">Exit waterfall</button>
+        <button role="tab" aria-selected="false" data-tab="how">How it works</button>
+      </div>
+      <div class="tabpanel" id="tab-own"></div>
+      <div class="tabpanel" id="tab-rounds" hidden></div>
+      <div class="tabpanel" id="tab-exit" hidden></div>
+      <div class="tabpanel how" id="tab-how" hidden>
+        <div class="card">
+          <h3>Pricing a round</h3>
+          <p>Pre-money valuation is what the company is worth before the new money. Post-money adds the investment. The price per share is set on the fully diluted share count before the round, including any new pool shares.</p>
+          <div class="formula">Post-money       = Pre-money + Investment
+Price per share  = Pre-money ÷ (Shares before round + New pool shares)
+Investor shares  = Investment ÷ Price per share
+Investor stake   = Investment ÷ Post-money</div>
+          <h3>The option pool shuffle</h3>
+          <p>Investors usually ask for the ESOP pool to be a set % of the company after the round, and for it to be created before they invest. The new pool shares therefore dilute only the existing shareholders, not the incoming investor, which quietly lowers the effective pre-money value for founders.</p>
+          <div class="formula">New pool shares X solves:  Existing pool + X = Target % × Post-round shares
+X = (Target % × S × k − Existing pool) ÷ (1 − Target % × k),   k = Post-money ÷ Pre-money</div>
+          <p>The “effective pre-money” in Round economics shows the valuation founders actually received once the pool top-up is taken out.</p>
+          <h3>Liquidation preference</h3>
+          <p>At exit, investors with a 1x preference can take their money back before common shareholders get anything. A non-participating investor chooses the better of the preference or converting to common and sharing pro rata. A participating investor takes the preference and then also shares pro rata, which is why participation is negotiated hard.</p>
+          <div class="formula">Non-participating payout = max(Preference × Invested,  Stake × Proceeds left for common)
+Participating payout     = Preference × Invested + Stake × Proceeds left for common</div>
+          <p>With stacked seniority, the latest round is paid first; with pari passu, all preferences share any shortfall in proportion to their claims. The simulator works out each investor’s convert-or-take-preference choice together, because one investor converting changes what the others receive.</p>
+          <h3>Assumptions</h3>
+          <p>The whole ESOP pool is treated as granted and exercised at exit, which slightly overstates employee payouts. Shares are not rounded to whole numbers. There are no convertible notes, SAFEs, anti-dilution adjustments, secondary sales or participation caps. Taxes and transaction costs are ignored.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="band" id="learn" aria-labelledby="learnhead">
+  <div class="section-head"><h2 id="learnhead">The three ideas behind every cap table</h2><p>Illustrated with the Series A round from the example: ₹15 cr invested at a ₹60 cr pre-money valuation.</p></div>
+  <div class="learn">
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 170" role="img" aria-label="Pre-money of 60 crore plus investment of 15 crore equals post-money of 75 crore">
+        <text x="10" y="18" font-size="12" style="fill:var(--muted)">₹ crore</text>
+        <rect x="40" y="48" width="56" height="100" rx="4" fill="#1F3A93"/><text x="68" y="104" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">60</text><text x="68" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Pre-money</text>
+        <text x="118" y="104" text-anchor="middle" font-size="22" style="fill:var(--muted)">+</text>
+        <rect x="140" y="123" width="56" height="25" rx="4" fill="#E0A030"/><text x="168" y="140" text-anchor="middle" font-size="14" fill="#152033" font-weight="600">15</text><text x="168" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Investment</text>
+        <text x="218" y="104" text-anchor="middle" font-size="22" style="fill:var(--muted)">=</text>
+        <rect x="236" y="23" width="56" height="100" rx="4" fill="#1F3A93"/><rect x="236" y="123" width="56" height="25" rx="4" fill="#E0A030"/><text x="264" y="78" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">75</text><text x="264" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Post-money</text>
+      </svg></div>
+      <div class="txt"><h3>Pre-money and post-money</h3><p>The investor’s stake is the investment divided by the post-money value: 15 ÷ 75 = 20%. Everyone else shares the remaining 80%.</p></div>
+    </article>
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 170" role="img" aria-label="The 60 crore headline pre-money includes 3.3 crore of new option pool, leaving 56.7 crore for existing shareholders">
+        <rect x="20" y="40" width="260" height="34" rx="5" fill="#1F3A93"/><text x="30" y="62" font-size="13" fill="#fff" font-weight="600">Headline pre-money ₹60 cr</text>
+        <rect x="20" y="98" width="245" height="34" rx="5" fill="#1F3A93" opacity=".8"/><rect x="265" y="98" width="15" height="34" rx="3" fill="#7C8C9B"/>
+        <text x="30" y="120" font-size="13" fill="#fff" font-weight="600">Existing holders ₹56.7 cr</text>
+        <path d="M272 140v12" stroke="#7C8C9B" stroke-width="1.5"/><text x="280" y="164" text-anchor="end" font-size="12" style="fill:var(--muted)">New ESOP shares ₹3.3 cr</text>
+        <text x="20" y="22" font-size="12" style="fill:var(--muted)">What the press release says</text><text x="20" y="92" font-size="12" style="fill:var(--muted)">What founders actually got</text>
+      </svg></div>
+      <div class="txt"><h3>The option pool shuffle</h3><p>Investors ask for a bigger ESOP pool created before they invest, so the new shares dilute only existing holders. The headline valuation stays the same while the founders’ real price drops.</p></div>
+    </article>
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 170" role="img" aria-label="Waterfall of an 80 crore sale: Series B preference first, then Series A, then Seed, then the remainder to common shareholders">
+        <text x="10" y="18" font-size="12" style="fill:var(--muted)">Sale of ₹80 cr, stacked 1x preferences</text>
+        <rect x="18" y="32" width="44" height="110" rx="3" fill="#152033" opacity=".75"/><text x="40" y="160" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Sale</text>
+        <rect x="76" y="32" width="44" height="68.75" rx="3" fill="#22A68F"/><text x="98" y="160" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Series B</text>
+        <rect x="134" y="100.75" width="44" height="20.6" rx="3" fill="#E0674A"/><text x="156" y="160" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Series A</text>
+        <rect x="192" y="121.35" width="44" height="4.1" rx="1" fill="#E0A030"/><text x="214" y="160" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Seed</text>
+        <rect x="250" y="125.45" width="44" height="16.55" rx="3" fill="#1F3A93"/><text x="272" y="160" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Common</text>
+        <path d="M62 32h14M120 100.75h14M178 121.35h14M236 125.45h14" style="stroke:var(--muted)" stroke-dasharray="2 2"/>
+      </svg></div>
+      <div class="txt"><h3>Liquidation preference</h3><p>In a modest sale, investors take their money back first, latest round first. What is left goes to founders, employees and anyone who chose to convert. In a large sale, everyone converts and ownership decides.</p></div>
+    </article>
+  </div>
+
+  <div class="glossary">
+    <details><summary>Fully diluted shares</summary><p>All shares that exist or could exist: issued shares plus the full ESOP pool, as if every option were granted and exercised. Ownership in this simulator is always shown on this basis.</p></details>
+    <details><summary>Step-up</summary><p>The price per share in a round divided by the price in the previous round. A 3x step-up means new investors paid three times what the last round paid for each share.</p></details>
+    <details><summary>Participating vs non-participating preference</summary><p>A non-participating investor takes either the preference or a pro rata share of the proceeds, whichever is larger. A participating investor gets the preference and then also shares in what is left, which is better for the investor and worse for founders.</p></details>
+    <details><summary>Stacked vs pari passu seniority</summary><p>Stacked means later rounds are paid before earlier ones. Pari passu means all preferred investors stand in one line and share any shortfall in proportion to what they are owed.</p></details>
+    <details><summary>Preference overhang</summary><p>The gap between what founders own and what they receive at a low exit. It shrinks as the exit value grows past the point where investors prefer to convert.</p></details>
+  </div>
+</section>
+
+<section class="band" id="about" aria-labelledby="abouthead">
+  <div class="about">
+    <svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="56" fill="#1F3A93"/><circle cx="56" cy="56" r="47" fill="none" stroke="#E0A030" stroke-width="2" stroke-dasharray="4 5"/><text x="56" y="69" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="40" fill="#fff">KJ</text></svg>
+    <div>
+      <h2 id="abouthead">Built by Kunal Jain</h2>
+      <p class="role">CA Finalist · Article trainee, Transaction Advisory, IRA Consulting &amp; Advisors LLP, Mumbai</p>
+      <p>I work on startup fundraising: financial models, due diligence documents and investor materials. Term sheets keep coming back to the same few mechanics, so I built this simulator to make dilution and liquidation preferences easy to see and test.</p>
+      <div class="links"><a class="btn primary" href="https://www.linkedin.com/in/kunaljainkj/" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="mailto:kunal2006jain@gmail.com">Email me</a></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site"><span>© 2026 Kunal Jain</span><span>For learning and discussion. Not legal or investment advice.</span></footer>
+<script>
+(function(){
+"use strict";
+const CR=1e7;
+const FOUNDER_C=["#1F3A93","#3E64D1","#6E8FE6","#A3B8F0","#2C4A6E"];
+const POOL_C="#7C8C9B";
+const INV_C=["#E0A030","#E0674A","#9A5BD8","#22A68F","#C83E78","#5E9C2F"];
+const EXAMPLE={company:"Example SaaS startup",founders:[{name:"Founder A",shares:6000},{name:"Founder B",shares:4000}],pool0:0,seniority:"stacked",exit:600,
+  rounds:[
+   {name:"Seed",investor:"Seed fund",pre:12,inv:3,pool:10,lp:1,part:false},
+   {name:"Series A",investor:"Series A fund",pre:60,inv:15,pool:12,lp:1,part:false},
+   {name:"Series B",investor:"Series B fund",pre:200,inv:50,pool:10,lp:1,part:false}]};
+let S;
+function load(){try{const s=JSON.parse(localStorage.getItem("captable-v1"));if(s&&s.founders&&s.rounds)return s}catch(e){}return JSON.parse(JSON.stringify(EXAMPLE))}
+function save(){try{localStorage.setItem("captable-v1",JSON.stringify(S))}catch(e){}}
+S=load();
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fin=n=>typeof n==="number"&&isFinite(n);
+const nf=(n,d=1)=>fin(n)?n.toLocaleString("en-IN",{maximumFractionDigits:d,minimumFractionDigits:0}):"—";
+const pct=(n,d=1)=>fin(n)?nf(n*100,d)+"%":"—";
+const cr=(n,d=1)=>fin(n)?"₹"+nf(n,d)+" cr":"—";
+const rs=n=>fin(n)?"₹"+nf(n,0):"—";
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+
+/* ---------- model ---------- */
+function compute(){
+  const holders=[];
+  const fTot=S.founders.reduce((s,f)=>s+Math.max(0,num(f.shares)),0);
+  S.founders.forEach((f,i)=>holders.push({key:"f"+i,name:f.name||`Founder ${i+1}`,type:"founder",color:FOUNDER_C[i%FOUNDER_C.length],shares:Math.max(0,num(f.shares))}));
+  const p0=Math.min(Math.max(num(S.pool0),0),60)/100;
+  const pool={key:"pool",name:"ESOP pool",type:"pool",color:POOL_C,shares:p0>0&&fTot>0?p0*fTot/(1-p0):0};
+  holders.push(pool);
+  const snap=()=>{const m={};holders.forEach(h=>m[h.key]=h.shares);return m};
+  const stages=[{label:"Founding",shares:snap()}];
+  const rounds=[];let error=null;let prevPrice=null;
+  S.rounds.forEach((r,i)=>{
+    if(error)return;
+    const pre=num(r.pre),inv=num(r.inv),P=Math.min(Math.max(num(r.pool),0),60)/100;
+    if(pre<=0||inv<0){error=`${r.name||"Round "+(i+1)}: pre-money must be above zero.`;return}
+    const Spre=holders.reduce((s,h)=>s+h.shares,0);
+    if(Spre<=0){error="Add founder shares to start.";return}
+    const k=(pre+inv)/pre;
+    if(P*k>=1){error=`${r.name}: the pool target is too large for this round size.`;return}
+    let X=P>0?(P*Spre*k-pool.shares)/(1-P*k):0; if(X<0)X=0;
+    const before=snap();const fBefore=holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/Spre;
+    const price=pre*CR/(Spre+X);
+    const N=inv>0?inv*CR/price:0;
+    pool.shares+=X;
+    const h={key:"r"+i,name:r.investor||r.name||`Round ${i+1} investor`,round:r.name||`Round ${i+1}`,type:"investor",color:INV_C[i%INV_C.length],shares:N,invested:inv,lp:Math.max(0,num(r.lp)),part:!!r.part,idx:i};
+    holders.push(h);
+    const Spost=holders.reduce((s,x)=>s+x.shares,0);
+    const fAfter=holders.filter(x=>x.type==="founder").reduce((s,x)=>s+x.shares,0)/Spost;
+    rounds.push({name:r.name||`Round ${i+1}`,pre,inv,post:pre+inv,price,stepUp:prevPrice?price/prevPrice:null,X,N,poolPct:pool.shares/Spost,invPct:N/Spost,fBefore,fAfter,effPre:pre-X*price/CR,poolCostCr:X*price/CR});
+    prevPrice=price;
+    stages.push({label:r.name||`Round ${i+1}`,shares:snap()});
+  });
+  const total=holders.reduce((s,h)=>s+h.shares,0);
+  return {holders,stages,rounds,error,total,pool};
+}
+
+function waterfall(M,exit,seniority){
+  const inv=M.holders.filter(h=>h.type==="investor"&&h.shares>0);
+  const commonBase=M.holders.filter(h=>h.type!=="investor");
+  function pay(conv){
+    const out={};M.holders.forEach(h=>out[h.key]=0);
+    let rem=exit;
+    const prefHolders=inv.filter(h=>h.part||!conv[h.key]);
+    const tiers=seniority==="pari"?[prefHolders]:[...new Set(prefHolders.map(h=>h.idx))].sort((a,b)=>b-a).map(ix=>prefHolders.filter(h=>h.idx===ix));
+    for(const t of tiers){
+      const claim=t.reduce((s,h)=>s+h.lp*h.invested,0);if(claim<=0)continue;
+      const paid=Math.min(rem,claim);
+      t.forEach(h=>out[h.key]+=paid*(h.lp*h.invested)/claim);rem-=paid;
+    }
+    const sharers=[...commonBase,...inv.filter(h=>h.part||conv[h.key])];
+    const sh=sharers.reduce((s,h)=>s+h.shares,0);
+    if(rem>0&&sh>0)sharers.forEach(h=>out[h.key]+=rem*h.shares/sh);
+    return out;
+  }
+  const conv={};inv.forEach(h=>conv[h.key]=false);
+  for(let it=0;it<40;it++){
+    const cur=pay(conv);let best=null,gain=1e-9;
+    inv.filter(h=>!h.part).forEach(h=>{const t={...conv,[h.key]:!conv[h.key]};const alt=pay(t);const g=alt[h.key]-cur[h.key];if(g>gain){gain=g;best=h.key}});
+    if(!best)break;conv[best]=!conv[best];
+  }
+  return {out:pay(conv),conv};
+}
+
+/* ---------- inputs ---------- */
+function renderInputs(){
+  $("company").value=S.company||"";
+  $("pool0").value=S.pool0;
+  $("seniority").value=S.seniority;
+  $("founders").innerHTML=S.founders.map((f,i)=>`<div class="founder">
+    <label class="field">Founder ${i+1}<input type="text" data-f="${i}" data-k="name" value="${esc(f.name)}"></label>
+    <label class="field">Shares<input type="number" min="0" step="1" data-f="${i}" data-k="shares" value="${esc(f.shares)}"></label>
+    ${S.founders.length>1?`<button class="icon" data-rmf="${i}" aria-label="Remove founder ${i+1}">×</button>`:"<span></span>"}
+  </div>`).join("");
+  $("rounds").innerHTML=S.rounds.map((r,i)=>`<div class="round">
+    <div class="round-head"><input type="text" data-r="${i}" data-k="name" value="${esc(r.name)}" aria-label="Round name">
+      <button class="icon" data-rmr="${i}" aria-label="Remove ${esc(r.name)}">×</button></div>
+    <label class="field">Lead investor<input type="text" data-r="${i}" data-k="investor" value="${esc(r.investor)}"></label>
+    <div class="row3">
+      <label class="field">Pre-money<input type="number" min="0" step="any" data-r="${i}" data-k="pre" value="${esc(r.pre)}"></label>
+      <label class="field">Investment<input type="number" min="0" step="any" data-r="${i}" data-k="inv" value="${esc(r.inv)}"></label>
+      <label class="field">Pool target %<input type="number" min="0" max="40" step="0.5" data-r="${i}" data-k="pool" value="${esc(r.pool)}"></label>
+    </div>
+    <div class="row2">
+      <label class="field">Liquidation pref.<select data-r="${i}" data-k="lp">${[0,1,1.5,2,3].map(v=>`<option value="${v}" ${num(r.lp)===v?"selected":""}>${v===0?"None":v+"x"}</option>`).join("")}</select></label>
+      <label class="chk"><input type="checkbox" data-r="${i}" data-k="part" ${r.part?"checked":""}> Participating</label>
+    </div>
+  </div>`).join("");
+}
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.id==="company"){S.company=t.value}
+  else if(t.id==="pool0"){S.pool0=t.value}
+  else if(t.id==="seniority"){S.seniority=t.value}
+  else if(t.dataset.f!=null){S.founders[+t.dataset.f][t.dataset.k]=t.dataset.k==="shares"?t.value:t.value}
+  else if(t.dataset.r!=null){const k=t.dataset.k;S.rounds[+t.dataset.r][k]=k==="part"?t.checked:k==="lp"?num(t.value):t.value}
+  else if(t.id==="exit"||t.id==="exitRange"){S.exit=num(t.value);const o=t.id==="exit"?$("exitRange"):$("exit");if(o)o.value=S.exit;renderExit(compute());save();return}
+  else return;
+  save();renderOutputs();
+});
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;
+  if(t.id==="addFounder"){S.founders.push({name:`Founder ${S.founders.length+1}`,shares:1000});save();renderInputs();renderOutputs()}
+  else if(t.dataset.rmf!=null){S.founders.splice(+t.dataset.rmf,1);save();renderInputs();renderOutputs()}
+  else if(t.id==="addRound"){
+    const last=S.rounds[S.rounds.length-1];const names=["Pre-seed","Seed","Series A","Series B","Series C","Series D","Series E"];
+    const nm=names[Math.min(S.rounds.length+1,names.length-1)];
+    const post=last?num(last.pre)+num(last.inv):10;
+    S.rounds.push({name:nm,investor:`${nm} investor`,pre:Math.round(post*3),inv:Math.round(post*0.75),pool:10,lp:1,part:false});
+    save();renderInputs();renderOutputs();
+  }
+  else if(t.dataset.rmr!=null){S.rounds.splice(+t.dataset.rmr,1);save();renderInputs();renderOutputs()}
+  else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));save();renderInputs();renderOutputs()}
+  else if(t.id==="csv"){downloadCsv()}
+  else if(t.dataset.tab){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b===t?"true":"false"));document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+t.dataset.tab)}
+});
+
+/* ---------- outputs ---------- */
+function renderOutputs(){
+  const M=compute();
+  $("roundErr").innerHTML=M.error?`<div class="err">${esc(M.error)}</div>`:"";
+  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  const last=M.rounds[M.rounds.length-1];
+  const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
+  $("kpis").innerHTML=`
+    <div class="kpi"><span>Founders own today</span><b>${pct(fEnd)}</b><small>from 100% at founding</small></div>
+    <div class="kpi"><span>Total raised</span><b>${cr(raised,0)}</b><small>across ${M.rounds.length} round${M.rounds.length===1?"":"s"}</small></div>
+    <div class="kpi"><span>Latest post-money</span><b>${last?cr(last.post,0):"—"}</b><small>${last?esc(last.name):"no rounds yet"}</small></div>
+    <div class="kpi"><span>Latest price per share</span><b>${last?rs(last.price):"—"}</b><small>${last&&last.stepUp?nf(last.stepUp,1)+"x the previous round":"&nbsp;"}</small></div>`;
+  renderOwnership(M);renderRounds(M);renderExit(M);renderHero(M);
+}
+function renderOwnership(M){
+  const legend=`<div class="legend">${M.holders.filter(h=>h.shares>0||h.type==="founder").map(h=>`<span><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("")}</div>`;
+  const bars=`<div class="stack">${M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;return `<div class="stack-row"><span>${esc(st.label)}</span><div class="stack-bar" role="img" aria-label="Ownership after ${esc(st.label)}">${M.holders.map(h=>{const v=(st.shares[h.key]||0)/tot;return v>0?`<i style="width:${v*100}%;background:${h.color}" title="${esc(h.name)}: ${pct(v)}"></i>`:""}).join("")}</div></div>`}).join("")}</div>`;
+  let t=`<div class="tbl"><table><thead><tr><th>Shareholder</th>${M.stages.map(s=>`<th>${esc(s.label)}</th>`).join("")}<th>Shares today</th></tr></thead><tbody>`;
+  M.holders.forEach(h=>{
+    if(h.shares<=0&&h.type!=="founder")return;
+    t+=`<tr><td><i class="sw" style="background:${h.color}"></i>${esc(h.name)}${h.type==="investor"?`<span class="sub">${esc(h.round)}</span>`:""}</td>`;
+    M.stages.forEach(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const v=st.shares[h.key];t+=`<td>${v!=null&&v>0?pct(v/tot):v===0&&h.type!=="investor"?"0%":""}</td>`});
+    t+=`<td>${nf(h.shares,0)}</td></tr>`;
+  });
+  t+=`<tr class="total"><td>Total</td>${M.stages.map(()=>"<td>100%</td>").join("")}<td>${nf(M.total,0)}</td></tr></tbody></table></div>`;
+  $("tab-own").innerHTML=`<div class="card"><h3>Ownership after each round</h3><p class="hint">Fully diluted, including the ESOP pool.</p>${legend}${bars}</div>${t}`;
+}
+function renderRounds(M){
+  if(!M.rounds.length){$("tab-rounds").innerHTML=`<div class="card"><p class="hint">Add a round to see its economics.</p></div>`;return}
+  let t=`<div class="tbl"><table><thead><tr><th>Round</th><th>Pre-money</th><th>Investment</th><th>Post-money</th><th>Price / share</th><th>Step-up</th><th>Investor stake</th><th>New pool shares</th><th>Effective pre-money</th><th>Founders before → after</th></tr></thead><tbody>`;
+  M.rounds.forEach(r=>{t+=`<tr><td>${esc(r.name)}</td><td>${cr(r.pre)}</td><td>${cr(r.inv)}</td><td>${cr(r.post)}</td><td>${rs(r.price)}</td><td>${r.stepUp?nf(r.stepUp,1)+"x":"—"}</td><td>${pct(r.invPct)}</td><td>${nf(r.X,0)}</td><td>${cr(r.effPre)}</td><td>${pct(r.fBefore)} → ${pct(r.fAfter)}</td></tr>`});
+  t+=`</tbody></table></div>`;
+  const biggest=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null);
+  const note=biggest&&biggest.poolCostCr>0?`<div class="callout">In ${esc(biggest.name)}, topping up the pool before the round is worth ${cr(biggest.poolCostCr)} of the ${cr(biggest.pre)} headline pre-money. Founders effectively sold at ${cr(biggest.effPre)}, about ${pct(biggest.poolCostCr/biggest.pre,0)} below the number in the press release.</div>`:"";
+  $("tab-rounds").innerHTML=`<div class="card"><h3>What each round cost the existing shareholders</h3><p class="hint">Effective pre-money removes the value of new pool shares created just before the round.</p></div>${t}${note}`;
+}
+function renderExit(M){
+  const el=$("tab-exit");
+  const invs=M.holders.filter(h=>h.type==="investor"&&h.shares>0);
+  if(!invs.length){el.innerHTML=`<div class="card"><p class="hint">Add a funding round to model an exit.</p></div>`;return}
+  const last=M.rounds[M.rounds.length-1];
+  const maxR=Math.max(50,Math.ceil((last?last.post:100)*4/50)*50);
+  const exit=fin(S.exit)&&S.exit>=0?S.exit:last.post;
+  const {out,conv}=waterfall(M,exit,S.seniority);
+  const maxPay=Math.max(...Object.values(out),1);
+  let t=`<div class="tbl"><table><thead><tr><th>Shareholder</th><th>Ownership</th><th>Payout</th><th>Share of proceeds</th><th></th><th>Takes</th><th>Return</th></tr></thead><tbody>`;
+  M.holders.forEach(h=>{
+    if(h.shares<=0)return;
+    const p=out[h.key]||0;const own=h.shares/M.total;const sp=exit>0?p/exit:0;
+    let takes="Common";if(h.type==="investor")takes=h.part?`<span class="pill">Pref + shares</span>`:conv[h.key]?`<span class="pill">Converts</span>`:`<span class="pill warn">${nf(h.lp,1)}x preference</span>`;
+    t+=`<tr><td><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</td><td>${pct(own)}</td><td>${cr(p,2)}</td><td>${pct(sp)}</td><td><div class="payout-bar"><i style="width:${p/maxPay*100}%;background:${h.color}"></i></div></td><td>${takes}</td><td>${h.type==="investor"&&h.invested>0?nf(p/h.invested,2)+"x":""}</td></tr>`;
+  });
+  t+=`<tr class="total"><td>Total</td><td>100%</td><td>${cr(exit,2)}</td><td>100%</td><td></td><td></td><td></td></tr></tbody></table></div>`;
+  const founders=M.holders.filter(h=>h.type==="founder");
+  const fOwn=founders.reduce((s,h)=>s+h.shares,0)/M.total;
+  const fGet=exit>0?founders.reduce((s,h)=>s+out[h.key],0)/exit:0;
+  const gap=fOwn-fGet;
+  const call=exit>0&&gap>0.005?`<div class="callout">At ${cr(exit,0)}, founders own ${pct(fOwn)} but receive ${pct(fGet)} of the proceeds. The ${nf(gap*100,1)} point gap is the preference overhang: investors are taking their money back first instead of sharing pro rata.</div>`:"";
+  const totInv=invs.reduce((s,h)=>s+h.invested,0);
+  const multiples=[0.5,1,2,3,5].map(m=>m*totInv).concat([last.post,last.post*2]).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
+  let sens=`<div class="tbl" style="margin-top:12px"><table><thead><tr><th>Exit value</th><th>Founders get</th><th>Founders’ share of proceeds</th><th>Investors get</th><th>ESOP gets</th></tr></thead><tbody>`;
+  multiples.forEach(v=>{const w=waterfall(M,v,S.seniority).out;const fg=founders.reduce((s,h)=>s+w[h.key],0);const ig=invs.reduce((s,h)=>s+w[h.key],0);sens+=`<tr><td>${cr(v,0)}${Math.abs(v-last.post)<1e-9?` <span class="sub">latest post-money</span>`:Math.abs(v-last.post*2)<1e-9?` <span class="sub">2x latest post-money</span>`:` <span class="sub">${nf(v/totInv,1)}x money raised</span>`}</td><td>${cr(fg,1)}</td><td>${pct(v>0?fg/v:0)}</td><td>${cr(ig,1)}</td><td>${cr(w.pool,1)}</td></tr>`});
+  sens+=`</tbody></table></div>`;
+  const sen=S.seniority==="pari"?"pari passu":"stacked, latest round first";
+  if(!$("exitOut")){
+    el.innerHTML=`<div class="card"><h3>Who gets paid at exit</h3><p class="hint">Sale proceeds to shareholders, after debt. Seniority: <span id="senTxt"></span> (change it under Company at founding).</p>
+    <div class="exit-ctl"><label class="field">Exit value, ₹ crore<input type="number" id="exit" min="0" step="any"></label><label class="range field">Drag to test<input type="range" id="exitRange" min="0" step="1"></label></div>
+    <div id="exitOut"></div></div>
+    <div class="card"><h3>How the split changes with exit value</h3><p class="hint">Low exits are where preferences bite; high exits are where everyone converts and ownership decides.</p><div id="exitSens"></div></div>`;
+  }
+  $("senTxt").textContent=sen;
+  const ei=$("exit"),er=$("exitRange");
+  er.max=maxR;
+  if(document.activeElement!==ei)ei.value=exit;
+  if(document.activeElement!==er)er.value=Math.min(exit,maxR);
+  $("exitOut").innerHTML=t+call;
+  $("exitSens").innerHTML=sens;
+}
+
+
+let heroDrawn=false;
+function renderHero(M){
+  const svg=$("heroDonut");if(!svg)return;
+  const R=80,C=2*Math.PI*R;
+  const hs=M.holders.filter(h=>h.shares>0);
+  let off=0;const segs=hs.map(h=>{const len=h.shares/(M.total||1)*C;const s={h,len,off};off+=len;return s});
+  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  const last=M.rounds[M.rounds.length-1];
+  if(!svg.querySelector(".segs")){
+    svg.innerHTML=`<circle cx="110" cy="110" r="${R}" fill="none" style="stroke:var(--line)" stroke-width="34"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="106" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="38" style="fill:var(--ink)" id="hcPct"></text><text x="110" y="126" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">founders</text><text x="110" y="141" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl"></text>`;
+  }
+  const g=svg.querySelector(".segs");
+  g.innerHTML=segs.map(s=>`<circle class="seg" cx="110" cy="110" r="${R}" fill="none" stroke="${s.h.color}" stroke-width="34" stroke-dasharray="${heroDrawn?`${Math.max(0,s.len-1.5)} ${C}`:`0 ${C}`}" stroke-dashoffset="${heroDrawn?-s.off:0}"><title>${esc(s.h.name)}: ${pct(s.len/C)}</title></circle>`).join("");
+  if(!heroDrawn){requestAnimationFrame(()=>requestAnimationFrame(()=>{g.querySelectorAll("circle").forEach((c,i)=>{c.setAttribute("stroke-dasharray",`${Math.max(0,segs[i].len-1.5)} ${C}`);c.setAttribute("stroke-dashoffset",-segs[i].off)});heroDrawn=true}))}
+  $("hcPct").textContent=pct(fEnd,0);
+  $("hcLbl").textContent=last?`after ${last.name}`:"at founding";
+  $("heroLegend").innerHTML=hs.map(h=>`<span><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("");
+  const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
+  $("tick1").innerHTML=`<span class="muted">Raised in ${M.rounds.length} round${M.rounds.length===1?"":"s"}</span><b>${cr(raised,0)}</b>`;
+  $("tick2").innerHTML=last?`<span class="muted"><i style="background:${INV_C[(M.rounds.length-1)%INV_C.length]}"></i>${esc(last.name)}</span><b>${cr(last.inv,0)} at ${cr(last.post,0)} post</b>`:"";
+  const big=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null);
+  $("tick3").innerHTML=big&&big.poolCostCr>0?`<span class="muted">${esc(big.name)} effective pre-money</span><b>${cr(big.effPre,1)} vs ${cr(big.pre,0)} headline</b>`:`<span class="muted">Founders own</span><b>${pct(fEnd)}</b>`;
+}
+
+function downloadCsv(){
+  const M=compute();
+  const rows=[["Shareholder","Type",...M.stages.map(s=>s.label+" %"),"Shares today"]];
+  M.holders.forEach(h=>{if(h.shares<=0&&h.type!=="founder")return;rows.push([h.name,h.type,...M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const v=st.shares[h.key];return v!=null?(v/tot*100).toFixed(2):""}),Math.round(h.shares)])});
+  rows.push([]);rows.push(["Round","Pre-money (₹ cr)","Investment (₹ cr)","Post-money (₹ cr)","Price per share (₹)","Investor stake %","New pool shares","Effective pre-money (₹ cr)"]);
+  M.rounds.forEach(r=>rows.push([r.name,r.pre,r.inv,r.post,r.price.toFixed(2),(r.invPct*100).toFixed(2),Math.round(r.X),r.effPre.toFixed(2)]));
+  const csv=rows.map(r=>r.map(c=>{const s=String(c);return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s}).join(",")).join("\n");
+  const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent("\ufeff"+csv);a.download=(S.company||"cap_table").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")+"_cap_table.csv";document.body.appendChild(a);a.click();a.remove();
+}
+
+renderInputs();renderOutputs();
+})();
+</script>
+</body>
+</html>
