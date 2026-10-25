@@ -232,6 +232,20 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
 footer.site span:nth-child(2){font-style:italic}
 .panel-c.ghost{border-style:dashed;box-shadow:5px 5px 0 var(--line);border-color:var(--muted)}
 .panel-c.ghost p{color:var(--muted)}
+.overview{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}
+@media (max-width:820px){.overview{grid-template-columns:minmax(0,1fr)}}
+.ov-kicker,.lnum{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin-bottom:4px}
+.overview h3{font-size:20px;margin:0 0 8px}
+.overview p{margin:0 0 10px;color:var(--ink)}
+.ov-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px;align-content:center}
+.ov-steps li{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;background:var(--soft);border-radius:12px;padding:10px 12px}
+.ov-steps .ov-n{width:32px;height:32px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:flex;align-items:center;justify-content:center;font-weight:700}
+.ov-steps p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.lcard .oneline{color:var(--ink);font-size:15px;margin:0 0 10px}
+.lcard dl{margin:0}
+.lcard dt{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:8px}
+.lcard dd{margin:2px 0 0;font-size:14px;color:var(--ink)}
+.learn-next{text-align:center;margin:16px 0 0;font-weight:600}
 .ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
 .empty-card{display:flex;gap:14px;align-items:center}
 .empty-card svg{flex:none}
@@ -373,12 +387,82 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
 </section>
 
 <section class="band" id="learn" aria-labelledby="learnhead">
-  <div class="section-head"><h2 id="learnhead">The Three Ideas Behind Every Cap Table</h2><p id="learnSub"></p></div>
-  <div class="learn">
-    <article class="lcard"><div class="art" id="learnA"></div><div class="txt"><h3>Pre-Money and Post-Money</h3><p id="learnTA"></p></div></article>
-    <article class="lcard"><div class="art" id="learnB"></div><div class="txt"><h3>The Option Pool Shuffle</h3><p id="learnTB"></p></div></article>
-    <article class="lcard"><div class="art" id="learnC"></div><div class="txt"><h3>Liquidation Preference</h3><p id="learnTC"></p></div></article>
+  <div class="section-head"><h2 id="learnhead">Learn the Concepts</h2><p>A five-minute, plain-English crash course. The examples use simple round numbers and aren’t linked to the simulator, so they always stay the same.</p></div>
+
+  <div class="overview">
+    <div class="ov-text">
+      <span class="ov-kicker">First things first</span>
+      <h3>What Is a Cap Table?</h3>
+      <p>A cap table (short for capitalisation table) is simply a list of <b>who owns what</b> in a company: the founders, employees through the ESOP pool, mentors, and investors.</p>
+      <p>Every time a startup raises money, new owners join and everyone else’s percentage shrinks. That’s called <b>dilution</b>. It isn’t automatically bad: a smaller slice of a much bigger pizza can be worth more than the whole of a small one.</p>
+    </div>
+    <ol class="ov-steps">
+      <li><span class="ov-n">1</span><div><b>Founding</b><p>Founders own 100% of an idea.</p></div></li>
+      <li><span class="ov-n">2</span><div><b>Funding rounds</b><p>Investors buy a slice; the company is valued higher each time.</p></div></li>
+      <li><span class="ov-n">3</span><div><b>Exit</b><p>The company is sold or listed, and the money is shared out.</p></div></li>
+    </ol>
   </div>
+
+  <div class="learn">
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 180" role="img" aria-label="Pre-money of 8 crore plus investment of 2 crore equals post-money of 10 crore">
+        <rect x="34" y="54" width="62" height="96" rx="5" fill="#1F3A93"/><text x="65" y="107" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">₹8 cr</text>
+        <text x="65" y="170" text-anchor="middle" font-size="12" style="fill:var(--muted)">Before</text>
+        <text x="117" y="112" text-anchor="middle" font-size="24" style="fill:var(--muted)">+</text>
+        <rect x="138" y="126" width="62" height="24" rx="5" fill="#E0A030"/><text x="169" y="143" text-anchor="middle" font-size="13" font-weight="700" fill="#152033">₹2 cr</text>
+        <text x="169" y="170" text-anchor="middle" font-size="12" style="fill:var(--muted)">New money</text>
+        <text x="221" y="112" text-anchor="middle" font-size="24" style="fill:var(--muted)">=</text>
+        <rect x="238" y="30" width="56" height="96" rx="5" fill="#1F3A93"/><rect x="238" y="126" width="56" height="24" rx="5" fill="#E0A030"/><text x="266" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">₹10 cr</text>
+        <text x="266" y="170" text-anchor="middle" font-size="12" style="fill:var(--muted)">After</text>
+        <text x="150" y="18" text-anchor="middle" font-size="12" style="fill:var(--muted)">Investor’s stake = 2 ÷ 10 = 20%</text>
+      </svg></div>
+      <div class="txt">
+        <span class="lnum">Idea 1</span><h3>Pre-Money and Post-Money</h3>
+        <p class="oneline">Pre-money is what the company is worth <b>before</b> new money comes in. Post-money is that value <b>plus</b> the new money.</p>
+        <dl><dt>Simple example</dt><dd>A startup worth ₹8 cr raises ₹2 cr. It’s now worth ₹10 cr, and the investor owns 2 ÷ 10 = 20%.</dd>
+        <dt>Why it matters</dt><dd>Always work out the stake on post-money. Dividing by pre-money (2 ÷ 8 = 25%) overstates what the investor gets.</dd></dl>
+      </div>
+    </article>
+
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 180" role="img" aria-label="An 8 crore headline valuation includes 1 crore of new ESOP shares, so founders effectively get 7 crore">
+        <text x="16" y="22" font-size="12" style="fill:var(--muted)">What the headline says</text>
+        <rect x="16" y="30" width="268" height="36" rx="6" fill="#1F3A93"/><text x="28" y="53" font-size="13.5" font-weight="700" fill="#fff">Valuation ₹8 cr</text>
+        <text x="16" y="96" font-size="12" style="fill:var(--muted)">What founders really get</text>
+        <rect x="16" y="104" width="232" height="36" rx="6" fill="#1F3A93" opacity=".82"/><text x="28" y="127" font-size="13.5" font-weight="700" fill="#fff">₹7 cr</text>
+        <rect x="251" y="104" width="33" height="36" rx="5" fill="#7C8C9B"/>
+        <path d="M267 144v10" stroke="#7C8C9B" stroke-width="1.6"/><text x="284" y="168" text-anchor="end" font-size="12" style="fill:var(--muted)">₹1 cr of new ESOP shares</text>
+      </svg></div>
+      <div class="txt">
+        <span class="lnum">Idea 2</span><h3>The Option Pool Shuffle</h3>
+        <p class="oneline">Investors often ask for a bigger employee stock option (ESOP) pool to be created <b>before</b> they invest, so only the existing owners pay for it.</p>
+        <dl><dt>Simple example</dt><dd>The ₹8 cr valuation quietly includes ₹1 cr of new ESOP shares. The founders effectively sold at ₹7 cr.</dd>
+        <dt>Why it matters</dt><dd>Negotiate the size of the pool, not just the valuation. A smaller pool can be worth more than a higher headline number.</dd></dl>
+      </div>
+    </article>
+
+    <article class="lcard">
+      <div class="art"><svg viewBox="0 0 300 180" role="img" aria-label="Small sale versus big sale with a 1x liquidation preference">
+        <text x="16" y="20" font-size="12" style="fill:var(--muted)">Investor put in ₹10 cr for 25%</text>
+        <text x="16" y="46" font-size="12.5" font-weight="700" style="fill:var(--ink)">Small sale of ₹16 cr</text><text x="284" y="46" text-anchor="end" font-size="11.5" style="fill:var(--muted)">money back first</text>
+        <rect x="16" y="53" width="166" height="28" rx="5" fill="#E0674A"/><text x="26" y="72" font-size="12.5" font-weight="700" fill="#fff">₹10 cr</text>
+        <rect x="185" y="53" width="99" height="28" rx="5" fill="#1F3A93"/><text x="195" y="72" font-size="12.5" font-weight="700" fill="#fff">₹6 cr</text>
+        <text x="16" y="108" font-size="12.5" font-weight="700" style="fill:var(--ink)">Big sale of ₹100 cr</text><text x="284" y="108" text-anchor="end" font-size="11.5" style="fill:var(--muted)">takes its 25%</text>
+        <rect x="16" y="115" width="66" height="28" rx="5" fill="#E0674A"/><text x="26" y="134" font-size="12.5" font-weight="700" fill="#fff">₹25 cr</text>
+        <rect x="85" y="115" width="199" height="28" rx="5" fill="#1F3A93"/><text x="95" y="134" font-size="12.5" font-weight="700" fill="#fff">₹75 cr</text>
+        <rect x="16" y="160" width="10" height="10" rx="2" fill="#E0674A"/><text x="31" y="169" font-size="11.5" style="fill:var(--muted)">Investor</text>
+        <rect x="96" y="160" width="10" height="10" rx="2" fill="#1F3A93"/><text x="111" y="169" font-size="11.5" style="fill:var(--muted)">Founders &amp; team</text>
+      </svg></div>
+      <div class="txt">
+        <span class="lnum">Idea 3</span><h3>Liquidation Preference</h3>
+        <p class="oneline">A 1x preference lets an investor take their money back <b>before</b> anyone else when the company is sold, if that’s more than their share.</p>
+        <dl><dt>Simple example</dt><dd>An investor puts in ₹10 cr for 25%. In a ₹16 cr sale they take their ₹10 cr back and founders get ₹6 cr. In a ₹100 cr sale they simply take 25% (₹25 cr) and founders get ₹75 cr.</dd>
+        <dt>Why it matters</dt><dd>Preferences bite in small exits. That’s when founders can walk away with far less than their ownership suggests.</dd></dl>
+      </div>
+    </article>
+  </div>
+
+  <p class="learn-next">Got the idea? <a href="#simulator">Try it with your own numbers in the simulator →</a></p>
 
   <div class="glossary">
     <details><summary>Fully Diluted Shares</summary><p>All shares that exist or could exist: issued shares plus the full ESOP pool, as if every option were granted and exercised. Ownership in this simulator is always shown on this basis.</p></details>
@@ -560,7 +644,7 @@ document.addEventListener("input",e=>{
   else if(t.dataset.f!=null){S.founders[+t.dataset.f][t.dataset.k]=t.dataset.k==="shares"?t.value:t.value}
   else if(t.dataset.a!=null){const k=t.dataset.k;S.advisors[+t.dataset.a][k]=k==="at"?num(t.value):t.value}
   else if(t.dataset.r!=null){const k=t.dataset.k;S.rounds[+t.dataset.r][k]=k==="part"?t.checked:k==="lp"?num(t.value):t.value;if(k==="name")renderAdvisors()}
-  else if(t.id==="exit"||t.id==="exitRange"){S.exit=num(t.value);const o=t.id==="exit"?$("exitRange"):$("exit");if(o)o.value=S.exit;renderExit(compute());renderLearn();return}
+  else if(t.id==="exit"||t.id==="exitRange"){S.exit=num(t.value);const o=t.id==="exit"?$("exitRange"):$("exit");if(o)o.value=S.exit;renderExit(compute());return}
   else return;
   save();renderOutputs();
 });
@@ -776,31 +860,6 @@ function svgWaterfall(M,exit,sen){
   txt+=(parts.join("; ")||"there are no investors yet")+`. Founders and the team receive ${cr(common,1)}, or ${pct(exit>0?common/exit:0,0)} of the sale.`;
   return {svg:s,txt};
 }
-function renderLearn(){
-  const V=viewModel(true);
-  if(!V){
-    $("learnSub").innerHTML=tagHTML(false)+"These diagrams draw themselves from your first funding round. Until then, here’s the idea in words.";
-    const q=(x,y)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="16" font-family="Georgia,serif" style="fill:var(--muted)">?</text>`;
-    $("learnA").innerHTML=`<svg viewBox="0 0 300 170" role="img" aria-label="Pre-money plus investment equals post-money"><rect x="40" y="56" width="56" height="90" rx="4" style="fill:var(--line)"/>${q(68,106)}<text x="68" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Pre-money</text><text x="118" y="106" text-anchor="middle" font-size="22" style="fill:var(--muted)">+</text><rect x="140" y="116" width="56" height="30" rx="4" style="fill:var(--line)"/>${q(168,137)}<text x="168" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Investment</text><text x="218" y="106" text-anchor="middle" font-size="22" style="fill:var(--muted)">=</text><rect x="236" y="26" width="56" height="120" rx="4" style="fill:var(--line)"/>${q(264,92)}<text x="264" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Post-money</text></svg>`;
-    $("learnTA").textContent="Post-money is the pre-money valuation plus the new investment. The investor’s stake is the investment divided by the post-money value; everyone else shares the rest.";
-    $("learnB").innerHTML=`<svg viewBox="0 0 300 170" role="img" aria-label="Headline pre-money versus what founders actually get"><text x="20" y="22" font-size="12" style="fill:var(--muted)">What the press release says</text><rect x="20" y="30" width="260" height="34" rx="5" style="fill:var(--line)"/>${q(150,53)}<text x="20" y="90" font-size="12" style="fill:var(--muted)">What founders actually get</text><rect x="20" y="98" width="215" height="34" rx="5" style="fill:var(--line)"/><rect x="239" y="98" width="41" height="34" rx="3" style="fill:var(--line)" opacity=".6"/>${q(128,121)}<text x="280" y="160" text-anchor="end" font-size="12" style="fill:var(--muted)">New ESOP shares</text></svg>`;
-    $("learnTB").textContent="Investors often ask for the ESOP pool to be topped up before they invest, so the new shares dilute only existing owners. The headline valuation stays the same while the founders’ real price drops.";
-    $("learnC").innerHTML=`<svg viewBox="0 0 300 175" role="img" aria-label="Exit waterfall"><text x="8" y="16" font-size="12" style="fill:var(--muted)">Sale proceeds, paid in order</text>${[["Sale",30,108],["Latest round",30,50],["Earlier rounds",80,24],["Founders & team",104,34]].map(([l,y,h],i)=>`<rect x="${20+i*70}" y="${y}" width="44" height="${h}" rx="3" style="fill:var(--line)"/><text x="${42+i*70}" y="154" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">${l}</text>`).join("")}</svg>`;
-    $("learnTC").textContent="In a modest sale, investors with a liquidation preference take their money back first. What’s left goes to founders, employees and anyone who chose to convert. In a big sale, everyone converts and ownership decides.";
-    return;
-  }
-  const M=V.M;
-  const ref=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null)||M.rounds[M.rounds.length-1];
-  const last=M.rounds[M.rounds.length-1];
-  const exit=fin(S.exit)&&S.exit>0?S.exit:last.post;
-  $("learnSub").innerHTML=tagHTML(V.user)+(V.user?`Drawn from your numbers: ${esc(ref.name)}, ${cr(ref.inv,1)} invested at a ${cr(ref.pre,1)} pre-money. The waterfall uses the exit value from the simulator.`:`Illustrated with the ${esc(ref.name)} round from the example: ${cr(ref.inv,0)} invested at a ${cr(ref.pre,0)} pre-money valuation.`);
-  $("learnA").innerHTML=svgPrePost(ref);
-  $("learnTA").textContent=`The investor’s stake is the investment divided by the post-money value: ${nf(ref.inv,1)} ÷ ${nf(ref.post,1)} = ${pct(ref.invPct,1)}. Everyone else shares the remaining ${pct(1-ref.invPct,1)}.`;
-  $("learnB").innerHTML=svgPool(ref);
-  $("learnTB").textContent=ref.poolCostCr>0.0001?`In ${ref.name}, the ESOP pool was topped up before the money came in. ${cr(ref.poolCostCr,1)} of new pool shares came out of the ${cr(ref.pre,1)} headline, so existing holders effectively sold at ${cr(ref.effPre,1)}.`:`None of these rounds topped up the ESOP pool, so the headline pre-money is what founders really got. Add a pool target % to a round to see the shuffle.`;
-  const w=svgWaterfall(M,exit,S.seniority);
-  $("learnC").innerHTML=w.svg;$("learnTC").textContent=w.txt;
-}
 function renderHeroEmpty(){
   const svg=$("heroDonut");if(!svg)return;
   svg.innerHTML=`<circle cx="110" cy="110" r="80" fill="none" style="stroke:var(--line)" stroke-width="34" stroke-dasharray="8 6"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="110" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="40" style="fill:var(--muted)" id="hcPct">—</text><text x="110" y="132" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">founders’ share</text><text x="110" y="147" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl">add your numbers</text>`;
@@ -815,7 +874,7 @@ function renderLinked(){
   const V=viewModel(false);
   if(V)renderHero(V.M);else renderHeroEmpty();
   const t=$("exTag");if(t)t.textContent=V?(S.company?S.company:"Your startup"):"Your startup";
-  renderStory();renderLearn();
+  renderStory();
 }
 const FACE=`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#E8B48A"/><path d="M5 14c0-8 6-12 12-12s12 4 12 12c-3-4-7-6-12-6S8 10 5 14z" fill="#2B2B33"/><circle cx="12.5" cy="17" r="1.6" fill="#2B2B33"/><circle cx="21.5" cy="17" r="1.6" fill="#2B2B33"/><path d="M12 24q5 -3 10 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 function quip(text){return `<div class="quip">${FACE}<span>${text}</span></div>`}
