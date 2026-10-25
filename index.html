@@ -226,6 +226,9 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
 .quip{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--brand-soft);font-size:14px;display:flex;gap:10px;align-items:center}
 .quip svg{flex:none}
 footer.site span:nth-child(2){font-style:italic}
+.ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
+.empty-card{display:flex;gap:14px;align-items:center}
+.empty-card svg{flex:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -255,6 +258,7 @@ footer.site span:nth-child(2){font-style:italic}
     </div>
   </div>
   <div class="hero-art" aria-label="Ownership after the latest round in the example">
+    <span class="ex-tag">Example startup</span>
     <div class="grid-bg"></div>
     <div class="donut-wrap">
       <svg class="donut" id="heroDonut" viewBox="0 0 220 220" role="img" aria-label="Ownership donut chart"></svg>
@@ -290,19 +294,19 @@ footer.site span:nth-child(2){font-style:italic}
 </section>
 
 <section class="band" id="simulator" aria-labelledby="simhead">
-  <div class="section-head"><h2 id="simhead">The Simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type. Refreshing the page starts again from the example.</p></div>
+  <div class="section-head"><h2 id="simhead">The Simulator</h2><p>It starts empty. Enter your own numbers, or click <b>Load Example</b> to see a worked case first. Everything recalculates as you type, and refreshing the page clears it.</p></div>
   <div class="sim-shell">
-    <div class="sim-top"><b>Example: A SaaS Startup From Founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to Example</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
+    <div class="sim-top"><b id="simTitle">Your Startup</b><div class="acts"><button class="btn" id="reset">Load Example</button><button class="btn" id="clear">Clear All</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
   <div class="grid">
     <div>
       <div class="panel">
         <h2>Company at Founding</h2>
         <p class="hint">Shares held by each founder before any outside money.</p>
-        <label class="field" style="margin-bottom:12px">Company name<input id="company" type="text"></label>
+        <label class="field" style="margin-bottom:12px">Company name<input id="company" type="text" placeholder="Your startup’s name"></label>
         <div id="founders"></div>
         <button class="add" id="addFounder">Add Founder</button>
         <div class="row2" style="margin-top:12px">
-          <label class="field">ESOP pool at founding, %<input id="pool0" type="number" min="0" max="50" step="0.5"></label>
+          <label class="field">ESOP pool at founding, %<input id="pool0" type="number" min="0" max="50" step="0.5" placeholder="0 if none"></label>
           <label class="field">Liquidation seniority<select id="seniority"><option value="stacked">Stacked (latest round paid first)</option><option value="pari">Pari passu (all rounds equal)</option></select></label>
         </div>
       </div>
@@ -437,7 +441,10 @@ const EXAMPLE={company:"Example SaaS startup",founders:[{name:"Founder A",shares
    {name:"Series A",investor:"Series A fund",pre:60,inv:15,pool:12,lp:1,part:false},
    {name:"Series B",investor:"Series B fund",pre:200,inv:50,pool:10,lp:1,part:false}]};
 let S;
-function load(){try{localStorage.removeItem("captable-v1")}catch(e){}return JSON.parse(JSON.stringify(EXAMPLE))}
+const BLANK={company:"",founders:[{name:"",shares:""},{name:"",shares:""}],advisors:[],pool0:"",seniority:"stacked",exit:null,rounds:[]};
+function load(){try{localStorage.removeItem("captable-v1")}catch(e){}return JSON.parse(JSON.stringify(BLANK))}
+function withState(st,fn){const prev=S;S=st;try{return fn()}finally{S=prev}}
+const exampleModel=()=>withState(JSON.parse(JSON.stringify(EXAMPLE)),compute);
 function save(){}
 S=load();
 
@@ -476,9 +483,9 @@ function compute(){
     if(error)return;
     grant(i+1);
     const pre=num(r.pre),inv=num(r.inv),P=Math.min(Math.max(num(r.pool),0),60)/100;
-    if(pre<=0||inv<0){error=`${r.name||"Round "+(i+1)}: pre-money must be above zero.`;return}
+    if(!(pre>0)||!(inv>0)){error=`Enter the pre-money and investment for ${r.name||"Round "+(i+1)} to include it.`;return}
     const Spre=holders.reduce((s,h)=>s+h.shares,0);
-    if(Spre<=0){error="Add founder shares to start.";return}
+    if(Spre<=0){error="Enter each founder’s shares first, then the rounds.";return}
     const k=(pre+inv)/pre;
     if(P*k>=1){error=`${r.name}: the pool target is too large for this round size.`;return}
     let X=P>0?(P*Spre*k-pool.shares)/(1-P*k):0; if(X<0)X=0;
@@ -531,19 +538,19 @@ function renderInputs(){
   $("pool0").value=S.pool0;
   $("seniority").value=S.seniority;
   $("founders").innerHTML=S.founders.map((f,i)=>`<div class="founder">
-    <label class="field">Founder ${i+1}<input type="text" data-f="${i}" data-k="name" value="${esc(f.name)}"></label>
-    <label class="field">Shares<input type="number" min="0" step="1" data-f="${i}" data-k="shares" value="${esc(f.shares)}"></label>
+    <label class="field">Founder ${i+1}<input type="text" data-f="${i}" data-k="name" value="${esc(f.name)}" placeholder="Name"></label>
+    <label class="field">Shares<input type="number" min="0" step="1" data-f="${i}" data-k="shares" value="${esc(f.shares)}" placeholder="e.g. 6000"></label>
     ${S.founders.length>1?`<button class="icon" data-rmf="${i}" aria-label="Remove founder ${i+1}">×</button>`:"<span></span>"}
   </div>`).join("");
   renderAdvisors();
   $("rounds").innerHTML=S.rounds.map((r,i)=>`<div class="round">
     <div class="round-head"><input type="text" data-r="${i}" data-k="name" value="${esc(r.name)}" aria-label="Round name">
       <button class="icon" data-rmr="${i}" aria-label="Remove ${esc(r.name)}">×</button></div>
-    <label class="field">Lead investor<input type="text" data-r="${i}" data-k="investor" value="${esc(r.investor)}"></label>
+    <label class="field">Lead investor<input type="text" data-r="${i}" data-k="investor" value="${esc(r.investor)}" placeholder="e.g. ${esc(r.name||"Seed")} fund"></label>
     <div class="row3">
-      <label class="field">Pre-money<input type="number" min="0" step="any" data-r="${i}" data-k="pre" value="${esc(r.pre)}"></label>
-      <label class="field">Investment<input type="number" min="0" step="any" data-r="${i}" data-k="inv" value="${esc(r.inv)}"></label>
-      <label class="field">Pool target %<input type="number" min="0" max="40" step="0.5" data-r="${i}" data-k="pool" value="${esc(r.pool)}"></label>
+      <label class="field">Pre-money<input type="number" min="0" step="any" data-r="${i}" data-k="pre" value="${esc(r.pre)}" placeholder="₹ cr"></label>
+      <label class="field">Investment<input type="number" min="0" step="any" data-r="${i}" data-k="inv" value="${esc(r.inv)}" placeholder="₹ cr"></label>
+      <label class="field">Pool target %<input type="number" min="0" max="40" step="0.5" data-r="${i}" data-k="pool" value="${esc(r.pool)}" placeholder="e.g. 10"></label>
     </div>
     <div class="row2">
       <label class="field">Liquidation pref.<select data-r="${i}" data-k="lp">${[0,1,1.5,2,3].map(v=>`<option value="${v}" ${num(r.lp)===v?"selected":""}>${v===0?"None":v+"x"}</option>`).join("")}</select></label>
@@ -555,8 +562,8 @@ function renderAdvisors(){
   const opts=[["0","At founding"],...S.rounds.map((r,i)=>[String(i+1),`Before ${r.name||"Round "+(i+1)}`])];
   const A=S.advisors||(S.advisors=[]);
   $("advisors").innerHTML=A.length?A.map((a,i)=>`<div class="adv">
-    <label class="field">Name<input type="text" data-a="${i}" data-k="name" value="${esc(a.name)}"></label>
-    <label class="field">Stake %<input type="number" min="0" max="20" step="0.05" data-a="${i}" data-k="pct" value="${esc(a.pct)}"></label>
+    <label class="field">Name<input type="text" data-a="${i}" data-k="name" value="${esc(a.name)}" placeholder="Mentor name"></label>
+    <label class="field">Stake %<input type="number" min="0" max="20" step="0.05" data-a="${i}" data-k="pct" value="${esc(a.pct)}" placeholder="e.g. 1"></label>
     <label class="field when">Granted<select data-a="${i}" data-k="at">${opts.map(([v,l])=>`<option value="${v}" ${String(num(a.at))===v?"selected":""}>${esc(l)}</option>`).join("")}</select></label>
     <button class="icon" data-rma="${i}" aria-label="Remove ${esc(a.name)}">×</button>
   </div>`).join(""):`<p class="hint" style="margin:0 0 10px">No mentors yet. Typical grants are 0.25%–2%, usually vesting over 1–2 years.</p>`;
@@ -575,19 +582,19 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("click",e=>{
   const t=e.target.closest("button");if(!t)return;
-  if(t.id==="addAdvisor"){(S.advisors||(S.advisors=[])).push({name:`Mentor ${S.advisors.length+1}`,pct:0.5,at:0});renderAdvisors();renderOutputs()}
+  if(t.id==="addAdvisor"){(S.advisors||(S.advisors=[])).push({name:"",pct:"",at:0});renderAdvisors();renderOutputs()}
   else if(t.dataset.rma!=null){S.advisors.splice(+t.dataset.rma,1);renderAdvisors();renderOutputs()}
-  else if(t.id==="addFounder"){S.founders.push({name:`Founder ${S.founders.length+1}`,shares:1000});save();renderInputs();renderOutputs()}
+  else if(t.id==="addFounder"){S.founders.push({name:"",shares:""});save();renderInputs();renderOutputs()}
   else if(t.dataset.rmf!=null){S.founders.splice(+t.dataset.rmf,1);save();renderInputs();renderOutputs()}
   else if(t.id==="addRound"){
-    const last=S.rounds[S.rounds.length-1];const names=["Pre-seed","Seed","Series A","Series B","Series C","Series D","Series E"];
-    const nm=names[Math.min(S.rounds.length+1,names.length-1)];
-    const post=last?num(last.pre)+num(last.inv):10;
-    S.rounds.push({name:nm,investor:`${nm} investor`,pre:Math.round(post*3),inv:Math.round(post*0.75),pool:10,lp:1,part:false});
+    const names=["Seed","Series A","Series B","Series C","Series D","Series E","Series F"];
+    const nm=names[Math.min(S.rounds.length,names.length-1)];
+    S.rounds.push({name:nm,investor:"",pre:"",inv:"",pool:"",lp:1,part:false});
     save();renderInputs();renderOutputs();
   }
   else if(t.dataset.rmr!=null){const ri=+t.dataset.rmr;S.rounds.splice(ri,1);(S.advisors||[]).forEach(a=>{const at=num(a.at);if(at===ri+1)a.at=0;else if(at>ri+1)a.at=at-1});save();renderInputs();renderOutputs()}
-  else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));save();renderInputs();renderOutputs()}
+  else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));renderInputs();renderOutputs();$("simTitle").textContent="Example: A SaaS Startup From Founding to Series B"}
+  else if(t.id==="clear"){S=JSON.parse(JSON.stringify(BLANK));renderInputs();renderOutputs();$("simTitle").textContent="Your Startup"}
   else if(t.id==="xlsx"){downloadXlsx()}
   else if(t.id==="pdf"){printReport()}
   else if(t.dataset.tab){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b===t?"true":"false"));document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+t.dataset.tab)}
@@ -597,17 +604,18 @@ document.addEventListener("click",e=>{
 function renderOutputs(){
   const M=compute();
   $("roundErr").innerHTML=M.error?`<div class="err">${esc(M.error)}</div>`:"";
-  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  const fEnd=M.total>0?M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/M.total:null;
   const last=M.rounds[M.rounds.length-1];
   const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
   $("kpis").innerHTML=`
-    <div class="kpi"><span>Founders own today</span><b>${pct(fEnd)}</b><small>from 100% at founding</small></div>
-    <div class="kpi"><span>Total raised</span><b>${cr(raised,0)}</b><small>across ${M.rounds.length} round${M.rounds.length===1?"":"s"}</small></div>
+    <div class="kpi"><span>Founders own today</span><b>${fEnd==null?"—":pct(fEnd)}</b><small>${fEnd==null?"enter founder shares":"fully diluted"}</small></div>
+    <div class="kpi"><span>Total raised</span><b>${M.rounds.length?cr(raised,0):"—"}</b><small>across ${M.rounds.length} round${M.rounds.length===1?"":"s"}</small></div>
     <div class="kpi"><span>Latest post-money</span><b>${last?cr(last.post,0):"—"}</b><small>${last?esc(last.name):"no rounds yet"}</small></div>
     <div class="kpi"><span>Latest price per share</span><b>${last?rs(last.price):"—"}</b><small>${last&&last.stepUp?nf(last.stepUp,1)+"x the previous round":"&nbsp;"}</small></div>`;
-  renderOwnership(M);renderRounds(M);renderExit(M);renderHero(M);
+  renderOwnership(M);renderRounds(M);renderExit(M);
 }
 function renderOwnership(M){
+  if(!(M.total>0)){$("tab-own").innerHTML=`<div class="card empty-card">${FACE}<div><h3>Nothing Here Yet</h3><p class="hint" style="margin:0">Enter each founder’s shares on the left, then add your funding rounds. Or click <b>Load Example</b> at the top to see how it works.</p></div></div>`;return}
   const legend=`<div class="legend">${M.holders.filter(h=>h.shares>0||h.type==="founder").map(h=>`<span><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("")}</div>`;
   const bars=`<div class="stack">${M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;return `<div class="stack-row"><span>${esc(st.label)}</span><div class="stack-bar" role="img" aria-label="Ownership after ${esc(st.label)}">${M.holders.map(h=>{const v=(st.shares[h.key]||0)/tot;return v>0?`<i style="width:${v*100}%;background:${h.color}" title="${esc(h.name)}: ${pct(v)}"></i>`:""}).join("")}</div></div>`}).join("")}</div>`;
   let t=`<div class="tbl"><table><thead><tr><th>Shareholder</th>${M.stages.map(s=>`<th>${esc(s.label)}</th>`).join("")}<th>Shares today</th></tr></thead><tbody>`;
@@ -696,7 +704,7 @@ function pizzaSVG(shares,holders,rad){
 }
 function renderStory(){
   const el=$("panels");if(!el)return;
-  const M=compute();if(M.error||!M.rounds.length){el.innerHTML="";return}
+  const M=exampleModel();if(M.error||!M.rounds.length){el.innerHTML="";return}
   const posts=[null,...M.rounds.map(r=>r.post)];const maxP=Math.max(...M.rounds.map(r=>r.post));
   const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
   const caps=[
@@ -745,7 +753,7 @@ function renderHero(M){
 function fileName(ext){return (S.company||"cap_table").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")+"_CapView."+ext}
 function downloadXlsx(){
   if(!window.XLSX){alert("The Excel export needs an internet connection. Use Save as PDF instead.");return}
-  const M=compute();const X=window.XLSX;const wb=X.utils.book_new();
+  const M=compute();if(!(M.total>0)){alert("Enter some numbers first, or load the example.");return}const X=window.XLSX;const wb=X.utils.book_new();
   const typeName={founder:"Founder",advisor:"Mentor / advisor",pool:"ESOP pool",investor:"Investor"};
   const live=M.holders.filter(h=>h.shares>0||h.type==="founder");
   function sheet(rows,widths,fmts){
@@ -786,6 +794,7 @@ function downloadXlsx(){
   X.writeFile(wb,fileName("xlsx"));
 }
 function printReport(){
+  if(!(compute().total>0)){alert("Enter some numbers first, or load the example.");return}
   document.querySelectorAll(".tabpanel").forEach(p=>p.dataset.wasHidden=p.hidden?"1":"");
   document.querySelectorAll(".tabpanel").forEach(p=>{if(p.id!=="tab-how")p.hidden=false});
   $("printHead").innerHTML=`<h1>${esc(S.company||"Cap table")}</h1><p>Cap table, round economics and exit waterfall · prepared with CapView by Kunal Jain · ${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</p>`;
@@ -795,7 +804,7 @@ function printReport(){
   setTimeout(()=>{if(document.querySelector('.tabpanel[data-was-hidden="1"]:not([hidden])'))restore()},1500);
 }
 
-renderInputs();renderOutputs();renderStory();
+renderInputs();renderOutputs();renderHero(exampleModel());renderStory();
 })();
 </script>
 </body>
