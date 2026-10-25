@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CapView: startup cap table, dilution and exit simulator</title>
+<title>CapView: Startup Cap Table, Dilution & Exit Simulator</title>
 <meta name="description" content="Model startup fundraising round by round: dilution, option pool top-ups, price per share and the exit waterfall with liquidation preferences.">
-<meta property="og:title" content="CapView: startup cap table, dilution and exit simulator">
+<meta property="og:title" content="CapView: Startup Cap Table, Dilution & Exit Simulator">
 <meta property="og:description" content="Model startup rounds, option pool top-ups and exit waterfalls with liquidation preferences.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpath d='M2.5 17Q17 4 31.5 17Q17 30 2.5 17Z' fill='none' stroke='%231F3A93' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cg transform='rotate(-90 17 17)' fill='none' stroke-width='4.2'%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%231F3A93' stroke-dasharray='19.5 39'/%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%23E0A030' stroke-dasharray='9.5 39' stroke-dashoffset='-20.5'/%3E%3Ccircle cx='17' cy='17' r='6.2' stroke='%23E0674A' stroke-dasharray='7.5 39' stroke-dashoffset='-31'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -199,6 +199,33 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
   .kpi b{font-size:22px}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+.spoiler{display:inline-block;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13.5px;border-radius:20px;padding:5px 12px;margin-bottom:16px;transform:rotate(-1.2deg)}
+.hero{position:relative}
+.hero::before{content:"";position:absolute;z-index:-1;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,var(--brand-soft) 0,transparent 70%);top:-60px;left:-120px}
+.hero::after{content:"";position:absolute;z-index:-1;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,var(--warn-soft) 0,transparent 70%);bottom:-40px;right:30%}
+.bubble{position:relative;margin:2px auto 6px;max-width:260px;background:var(--surface);border:1.5px solid var(--ink);border-radius:16px;padding:8px 14px;font-size:14px;font-weight:600;text-align:center}
+.bubble::after{content:"";position:absolute;left:50%;top:-8px;width:12px;height:12px;background:var(--surface);border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.q .char{display:block;margin-bottom:12px}
+.q{transition:transform .2s}
+.q:hover{transform:translateY(-3px) rotate(-.4deg)}
+@media (prefers-reduced-motion:reduce){.q,.q:hover{transition:none;transform:none}}
+.story{position:relative}
+.panels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.panels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.panels{grid-template-columns:minmax(0,1fr)}}
+.panel-c{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:14px;box-shadow:5px 5px 0 var(--ink);display:flex;flex-direction:column}
+.panel-c .step{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
+.panel-c h3{margin:2px 0 8px;font-size:18px}
+.panel-c .pz{display:flex;align-items:center;justify-content:center;height:190px}
+.panel-c .pz svg{width:100%;height:100%}
+.panel-c .worth{display:flex;justify-content:space-between;gap:8px;font-size:13px;border-top:1px dashed var(--line);padding-top:8px;margin-top:6px}
+.panel-c .worth b{font-size:15px}
+.panel-c p{margin:8px 0 0;font-size:14px;color:var(--ink)}
+.moral{margin:18px auto 0;max-width:760px;text-align:center;font-family:var(--serif);font-size:24px;line-height:1.3}
+.quip{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--brand-soft);font-size:14px;display:flex;gap:10px;align-items:center}
+.quip svg{flex:none}
+footer.site span:nth-child(2){font-style:italic}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -212,18 +239,19 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
     <div class="links">
       <a href="#learn">Learn</a>
       <a href="#about">About</a>
-      <a href="#simulator" class="cta">Open simulator</a>
+      <a href="#story">The Story</a><a href="#simulator" class="cta">Open Simulator</a>
     </div>
   </div>
 </nav>
 
 <header class="hero" id="top">
   <div>
-    <h1>Who owns the startup after Series B?</h1>
+    <span class="spoiler">Spoiler: founders usually own less than they think</span>
+    <h1>Who Owns the Startup After Series B?</h1>
     <p class="lead">Every round sells a slice of the company. Model the rounds, see exactly how founders get diluted, and find out who gets paid what when the company is sold.</p>
     <div class="ctas">
-      <a class="btn primary lg" href="#simulator">Try the simulator</a>
-      <a class="btn lg" href="#learn">Learn the concepts</a>
+      <a class="btn primary lg" href="#simulator">Try the Simulator</a>
+      <a class="btn lg" href="#learn">Learn the Concepts</a>
     </div>
   </div>
   <div class="hero-art" aria-label="Ownership after the latest round in the example">
@@ -231,41 +259,48 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
     <div class="donut-wrap">
       <svg class="donut" id="heroDonut" viewBox="0 0 220 220" role="img" aria-label="Ownership donut chart"></svg>
     </div>
+    <div class="bubble" id="bubble"></div>
     <div class="hero-legend" id="heroLegend"></div>
     <div class="ticks"><div class="tick" id="tick1"></div><div class="tick" id="tick2"></div><div class="tick" id="tick3"></div></div>
   </div>
 </header>
 
 <section class="band" aria-labelledby="qhead">
-  <div class="section-head"><h2 id="qhead">Three questions every founder and investor asks</h2><p>The simulator answers each of them for any set of rounds you enter.</p></div>
+  <div class="section-head"><h2 id="qhead">Three Questions Every Founder (and Investor) Asks</h2><p>The simulator answers each of them for any set of rounds you enter.</p></div>
   <div class="qgrid">
     <div class="q">
-      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#1F3A93" stroke-width="7" stroke-dasharray="52 100" transform="rotate(-90 28 28)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#E0A030" stroke-width="7" stroke-dasharray="20 100" stroke-dashoffset="-52" transform="rotate(-90 28 28)"/><circle cx="28" cy="28" r="14" fill="none" stroke="#E0674A" stroke-width="7" stroke-dasharray="16 100" stroke-dashoffset="-72" transform="rotate(-90 28 28)"/></svg>
-      <h3>How much do the founders keep?</h3><p>Ownership after every round, fully diluted, with the ESOP pool included.</p>
+      <svg class="char" width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="46" style="fill:var(--brand-soft)"/><path d="M22 90c2-18 12-28 26-28s24 10 26 28" fill="#1F3A93"/><path d="M38 64l10 9 10-9" fill="none" stroke="#14286b" stroke-width="2"/><circle cx="48" cy="40" r="15" fill="#E8B48A"/><path d="M33 38c0-11 7-17 15-17 9 0 16 6 15 17-3-5-8-8-15-8-6 0-11 3-15 8z" fill="#2B2B33"/><circle cx="43" cy="41" r="1.8" fill="#2B2B33"/><circle cx="53" cy="41" r="1.8" fill="#2B2B33"/><path d="M44 47q4 3 8 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/><rect x="30" y="72" width="36" height="20" rx="3" fill="#C9D3EA"/><circle cx="48" cy="82" r="3" fill="#1F3A93"/><g transform="translate(66 10)"><rect width="26" height="18" rx="9" fill="#fff" stroke="#1F3A93" stroke-width="1.5"/><text x="13" y="13" text-anchor="middle" font-size="10" font-weight="700" fill="#1F3A93">%?</text></g></svg>
+      <h3>How Much Do the Founders Keep?</h3><p>Ownership after every round, fully diluted, with the ESOP pool included. Bring tissues.</p>
     </div>
     <div class="q">
-      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><rect x="14" y="14" width="12" height="28" rx="2" fill="#1F3A93"/><rect x="30" y="14" width="12" height="22" rx="2" fill="#1F3A93" opacity=".55"/><rect x="30" y="36" width="12" height="6" rx="1" fill="#7C8C9B"/><path d="M44 36h4" stroke="#E0674A" stroke-width="2"/></svg>
-      <h3>What did that valuation really mean?</h3><p>Price per share, step-ups and the effective pre-money once the option pool top-up is taken out.</p>
+      <svg class="char" width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="46" style="fill:var(--brand-soft)"/><path d="M22 90c2-18 12-28 26-28s24 10 26 28" fill="#34405A"/><path d="M42 62l6 12 6-12z" fill="#fff"/><path d="M47 66h2l2 16-3 4-3-4z" fill="#E0A030"/><circle cx="48" cy="40" r="15" fill="#C98E66"/><path d="M33 37c1-10 7-15 15-15s15 5 15 15c-4-4-9-6-15-6s-11 2-15 6z" fill="#5A4636"/><rect x="38" y="38" width="8" height="5" rx="2" fill="none" stroke="#2B2B33" stroke-width="1.4"/><rect x="50" y="38" width="8" height="5" rx="2" fill="none" stroke="#2B2B33" stroke-width="1.4"/><path d="M46 40h4" stroke="#2B2B33" stroke-width="1.4"/><path d="M44 48h8" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/><rect x="62" y="70" width="22" height="16" rx="3" fill="#7A4E2D"/><path d="M69 70v-3h8v3" fill="none" stroke="#7A4E2D" stroke-width="2"/><g transform="translate(6 12)"><rect width="30" height="18" rx="9" fill="#fff" stroke="#34405A" stroke-width="1.5"/><text x="15" y="13" text-anchor="middle" font-size="10" font-weight="700" fill="#34405A">3.8x</text></g></svg>
+      <h3>What Did That Valuation Really Mean?</h3><p>Price per share, step-ups and the effective pre-money once the option pool top-up is quietly taken out.</p>
     </div>
     <div class="q">
-      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect width="56" height="56" rx="14" style="fill:var(--brand-soft)"/><rect x="12" y="12" width="7" height="32" rx="1.5" fill="#152033" opacity=".7"/><rect x="21" y="12" width="7" height="12" rx="1.5" fill="#22A68F"/><rect x="30" y="24" width="7" height="8" rx="1.5" fill="#E0674A"/><rect x="39" y="32" width="7" height="12" rx="1.5" fill="#1F3A93"/></svg>
-      <h3>Who gets paid in a sale?</h3><p>The exit waterfall with liquidation preferences, seniority and each investor’s convert-or-preference choice.</p>
+      <svg class="char" width="96" height="96" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="46" style="fill:var(--brand-soft)"/><path d="M22 90c2-18 12-28 26-28s24 10 26 28" fill="#22A68F"/><circle cx="48" cy="40" r="15" fill="#E8B48A"/><path d="M33 40c-1-12 6-19 15-19s16 7 15 19c-2-2-3-6-4-9-5 3-14 3-22 0-1 3-2 7-4 9z" fill="#3A2A22"/><path d="M42 41q1.5-2 3 0M51 41q1.5-2 3 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/><path d="M42 47q6 6 12 0" fill="#fff" stroke="#2B2B33" stroke-width="1.4"/><path d="M58 70c-6 0-10 6-10 12 0 6 5 9 12 9s12-3 12-9c0-6-4-12-10-12z" fill="#E0A030"/><path d="M57 70l-2-4h10l-2 4" fill="#C98A1A"/><text x="61" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#5A3A00">₹</text><path d="M20 22l3 3M20 25l3-3M74 18l2 2M74 20l2-2" stroke="#E0A030" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <h3>Who Gets Paid in a Sale?</h3><p>The exit waterfall: who eats first, who converts, and who is left holding the pizza box.</p>
     </div>
   </div>
 </section>
 
+<section class="band story" id="story" aria-labelledby="storyhead">
+  <div class="section-head"><h2 id="storyhead">The Dilution Story, Told With Pizza</h2><p>Same example as the simulator. Watch the founders’ slice get thinner while the pizza gets bigger, and notice the slice is worth more each time.</p></div>
+  <div class="panels" id="panels"></div>
+  <p class="moral" id="moral"></p>
+</section>
+
 <section class="band" id="simulator" aria-labelledby="simhead">
-  <div class="section-head"><h2 id="simhead">The simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type. Refreshing the page starts again from the example.</p></div>
+  <div class="section-head"><h2 id="simhead">The Simulator</h2><p>Start from the example or enter your own numbers. Everything recalculates as you type. Refreshing the page starts again from the example.</p></div>
   <div class="sim-shell">
-    <div class="sim-top"><b>Example: a SaaS startup from founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to example</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
+    <div class="sim-top"><b>Example: A SaaS Startup From Founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to Example</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
   <div class="grid">
     <div>
       <div class="panel">
-        <h2>Company at founding</h2>
+        <h2>Company at Founding</h2>
         <p class="hint">Shares held by each founder before any outside money.</p>
         <label class="field" style="margin-bottom:12px">Company name<input id="company" type="text"></label>
         <div id="founders"></div>
-        <button class="add" id="addFounder">Add founder</button>
+        <button class="add" id="addFounder">Add Founder</button>
         <div class="row2" style="margin-top:12px">
           <label class="field">ESOP pool at founding, %<input id="pool0" type="number" min="0" max="50" step="0.5"></label>
           <label class="field">Liquidation seniority<select id="seniority"><option value="stacked">Stacked (latest round paid first)</option><option value="pari">Pari passu (all rounds equal)</option></select></label>
@@ -273,17 +308,17 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
       </div>
 
       <div class="panel">
-        <h2>Mentors &amp; advisors</h2>
+        <h2>Mentors &amp; Advisors</h2>
         <p class="hint">Equity given for guidance, as a % of the company on the day it is granted. It dilutes everyone who already holds shares.</p>
         <div id="advisors"></div>
-        <button class="add" id="addAdvisor">Add mentor or advisor</button>
+        <button class="add" id="addAdvisor">Add Mentor or Advisor</button>
       </div>
 
       <div class="panel">
-        <h2>Funding rounds</h2>
+        <h2>Funding Rounds</h2>
         <p class="hint">Amounts in ₹ crore. The pool target is the ESOP pool as a % of post-money, topped up before the round (the option pool shuffle).</p>
         <div id="rounds"></div>
-        <button class="add" id="addRound">Add round</button>
+        <button class="add" id="addRound">Add Round</button>
         <div id="roundErr"></div>
       </div>
     </div>
@@ -293,16 +328,16 @@ footer.site{max-width:1180px;margin:0 auto;padding:28px 16px 40px;font-size:13px
       <div class="kpis" id="kpis"></div>
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected="true" data-tab="own">Ownership</button>
-        <button role="tab" aria-selected="false" data-tab="rounds">Round economics</button>
-        <button role="tab" aria-selected="false" data-tab="exit">Exit waterfall</button>
-        <button role="tab" aria-selected="false" data-tab="how">How it works</button>
+        <button role="tab" aria-selected="false" data-tab="rounds">Round Economics</button>
+        <button role="tab" aria-selected="false" data-tab="exit">Exit Waterfall</button>
+        <button role="tab" aria-selected="false" data-tab="how">How It Works</button>
       </div>
       <div class="tabpanel" id="tab-own"></div>
       <div class="tabpanel" id="tab-rounds" hidden></div>
       <div class="tabpanel" id="tab-exit" hidden></div>
       <div class="tabpanel how" id="tab-how" hidden>
         <div class="card">
-          <h3>Pricing a round</h3>
+          <h3>Pricing a Round</h3>
           <p>Pre-money valuation is what the company is worth before the new money. Post-money adds the investment. The price per share is set on the fully diluted share count before the round, including any new pool shares.</p>
           <div class="formula">Post-money       = Pre-money + Investment
 Price per share  = Pre-money ÷ (Shares before round + New pool shares)
@@ -328,7 +363,7 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
 </section>
 
 <section class="band" id="learn" aria-labelledby="learnhead">
-  <div class="section-head"><h2 id="learnhead">The three ideas behind every cap table</h2><p>Illustrated with the Series A round from the example: ₹15 cr invested at a ₹60 cr pre-money valuation.</p></div>
+  <div class="section-head"><h2 id="learnhead">The Three Ideas Behind Every Cap Table</h2><p>Illustrated with the Series A round from the example: ₹15 cr invested at a ₹60 cr pre-money valuation.</p></div>
   <div class="learn">
     <article class="lcard">
       <div class="art"><svg viewBox="0 0 300 170" role="img" aria-label="Pre-money of 60 crore plus investment of 15 crore equals post-money of 75 crore">
@@ -339,7 +374,7 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
         <text x="218" y="104" text-anchor="middle" font-size="22" style="fill:var(--muted)">=</text>
         <rect x="236" y="23" width="56" height="100" rx="4" fill="#1F3A93"/><rect x="236" y="123" width="56" height="25" rx="4" fill="#E0A030"/><text x="264" y="78" text-anchor="middle" font-size="15" fill="#fff" font-weight="600">75</text><text x="264" y="164" text-anchor="middle" font-size="12" style="fill:var(--muted)">Post-money</text>
       </svg></div>
-      <div class="txt"><h3>Pre-money and post-money</h3><p>The investor’s stake is the investment divided by the post-money value: 15 ÷ 75 = 20%. Everyone else shares the remaining 80%.</p></div>
+      <div class="txt"><h3>Pre-Money and Post-Money</h3><p>The investor’s stake is the investment divided by the post-money value: 15 ÷ 75 = 20%. Everyone else shares the remaining 80%.</p></div>
     </article>
     <article class="lcard">
       <div class="art"><svg viewBox="0 0 300 170" role="img" aria-label="The 60 crore headline pre-money includes 3.3 crore of new option pool, leaving 56.7 crore for existing shareholders">
@@ -366,11 +401,11 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
   </div>
 
   <div class="glossary">
-    <details><summary>Fully diluted shares</summary><p>All shares that exist or could exist: issued shares plus the full ESOP pool, as if every option were granted and exercised. Ownership in this simulator is always shown on this basis.</p></details>
-    <details><summary>Step-up</summary><p>The price per share in a round divided by the price in the previous round. A 3x step-up means new investors paid three times what the last round paid for each share.</p></details>
-    <details><summary>Participating vs non-participating preference</summary><p>A non-participating investor takes either the preference or a pro rata share of the proceeds, whichever is larger. A participating investor gets the preference and then also shares in what is left, which is better for the investor and worse for founders.</p></details>
-    <details><summary>Stacked vs pari passu seniority</summary><p>Stacked means later rounds are paid before earlier ones. Pari passu means all preferred investors stand in one line and share any shortfall in proportion to what they are owed.</p></details>
-    <details><summary>Preference overhang</summary><p>The gap between what founders own and what they receive at a low exit. It shrinks as the exit value grows past the point where investors prefer to convert.</p></details>
+    <details><summary>Fully Diluted Shares</summary><p>All shares that exist or could exist: issued shares plus the full ESOP pool, as if every option were granted and exercised. Ownership in this simulator is always shown on this basis.</p></details>
+    <details><summary>Step-Up</summary><p>The price per share in a round divided by the price in the previous round. A 3x step-up means new investors paid three times what the last round paid for each share.</p></details>
+    <details><summary>Participating vs Non-Participating Preference</summary><p>A non-participating investor takes either the preference or a pro rata share of the proceeds, whichever is larger. A participating investor gets the preference and then also shares in what is left, which is better for the investor and worse for founders.</p></details>
+    <details><summary>Stacked vs Pari Passu Seniority</summary><p>Stacked means later rounds are paid before earlier ones. Pari passu means all preferred investors stand in one line and share any shortfall in proportion to what they are owed.</p></details>
+    <details><summary>Preference Overhang</summary><p>The gap between what founders own and what they receive at a low exit. It shrinks as the exit value grows past the point where investors prefer to convert.</p></details>
   </div>
 </section>
 
@@ -381,12 +416,13 @@ Participating payout     = Preference × Invested + Stake × Proceeds left for c
       <h2 id="abouthead">Built by Kunal Jain</h2>
       <p class="role">CA Finalist · Article trainee, Transaction Advisory, IRA Consulting &amp; Advisors LLP, Mumbai</p>
       <p>I work on startup fundraising: financial models, due diligence documents and investor materials. Term sheets keep coming back to the same few mechanics, so I built this simulator to make dilution and liquidation preferences easy to see and test.</p>
+      <p class="small" style="margin:0 0 12px">Also by me: <a href="https://kunaljainn08.github.io/ipoview/" target="_blank" rel="noopener">IPOView</a>, a DRHP and RHP analyser.</p>
       <div class="links"><a class="btn primary" href="https://www.linkedin.com/in/kunaljainkj/" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="mailto:kunal2006jain@gmail.com">Email me</a></div>
     </div>
   </div>
 </section>
 
-<footer class="site"><span>CapView · © 2026 Kunal Jain</span><span>For learning and discussion. Not legal or investment advice.</span></footer>
+<footer class="site"><span>CapView · © 2026 Kunal Jain</span><span>No founders were harmed in the making of this website. Diluted, maybe.</span><span>For learning and discussion. Not legal or investment advice.</span></footer>
 <script>
 (function(){
 "use strict";
@@ -582,7 +618,9 @@ function renderOwnership(M){
     t+=`<td>${nf(h.shares,0)}</td></tr>`;
   });
   t+=`<tr class="total"><td>Total</td>${M.stages.map(()=>"<td>100%</td>").join("")}<td>${nf(M.total,0)}</td></tr></tbody></table></div>`;
-  $("tab-own").innerHTML=`<div class="card"><h3>Ownership after each round</h3><p class="hint">Fully diluted, including the ESOP pool.</p>${legend}${bars}</div>${t}`;
+  const fE=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  const q=M.rounds.length?quip(`Founders went from 100% to ${pct(fE,0)}. That’s not losing the pizza; it’s sharing a much bigger one.`):"";
+  $("tab-own").innerHTML=`<div class="card"><h3>Ownership After Each Round</h3><p class="hint">Fully diluted, including the ESOP pool.</p>${legend}${bars}</div>${t}${q}`;
 }
 function renderRounds(M){
   if(!M.rounds.length){$("tab-rounds").innerHTML=`<div class="card"><p class="hint">Add a round to see its economics.</p></div>`;return}
@@ -591,7 +629,7 @@ function renderRounds(M){
   t+=`</tbody></table></div>`;
   const biggest=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null);
   const note=biggest&&biggest.poolCostCr>0?`<div class="callout">In ${esc(biggest.name)}, topping up the pool before the round is worth ${cr(biggest.poolCostCr)} of the ${cr(biggest.pre)} headline pre-money. Founders effectively sold at ${cr(biggest.effPre)}, about ${pct(biggest.poolCostCr/biggest.pre,0)} below the number in the press release.</div>`:"";
-  $("tab-rounds").innerHTML=`<div class="card"><h3>What each round cost the existing shareholders</h3><p class="hint">Effective pre-money removes the value of new pool shares created just before the round.</p></div>${t}${note}`;
+  $("tab-rounds").innerHTML=`<div class="card"><h3>What Each Round Cost the Existing Shareholders</h3><p class="hint">Effective pre-money removes the value of new pool shares created just before the round.</p></div>${t}${note}`;
 }
 function renderExit(M){
   const el=$("tab-exit");
@@ -622,20 +660,62 @@ function renderExit(M){
   sens+=`</tbody></table></div>`;
   const sen=S.seniority==="pari"?"pari passu":"stacked, latest round first";
   if(!$("exitOut")){
-    el.innerHTML=`<div class="card"><h3>Who gets paid at exit</h3><p class="hint">Sale proceeds to shareholders, after debt. Seniority: <span id="senTxt"></span> (change it under Company at founding).</p>
+    el.innerHTML=`<div class="card"><h3>Who Gets Paid at Exit</h3><p class="hint">Sale proceeds to shareholders, after debt. Seniority: <span id="senTxt"></span> (change it under Company at founding).</p>
     <div class="exit-ctl"><label class="field">Exit value, ₹ crore<input type="number" id="exit" min="0" step="any"></label><label class="range field">Drag to test<input type="range" id="exitRange" min="0" step="1"></label></div>
     <div id="exitOut"></div></div>
-    <div class="card"><h3>How the split changes with exit value</h3><p class="hint">Low exits are where preferences bite; high exits are where everyone converts and ownership decides.</p><div id="exitSens"></div></div>`;
+    <div class="card"><h3>How the Split Changes With Exit Value</h3><p class="hint">Low exits are where preferences bite; high exits are where everyone converts and ownership decides.</p><div id="exitSens"></div></div>`;
   }
   $("senTxt").textContent=sen;
   const ei=$("exit"),er=$("exitRange");
   er.max=maxR;
   if(document.activeElement!==ei)ei.value=exit;
   if(document.activeElement!==er)er.value=Math.min(exit,maxR);
-  $("exitOut").innerHTML=t+call;
+  let eq="";
+  if(exit>0){if(fGet<0.005)eq=quip("Ouch. At this price the investors eat first and the founders get the pizza box.");else if(gap>0.05)eq=quip("Preferences are eating first. Try a higher exit value and watch the founders’ share catch up.");else eq=quip("Everyone converts and ownership decides. The founders can finally order dessert.")}
+  $("exitOut").innerHTML=t+call+eq;
   $("exitSens").innerHTML=sens;
 }
 
+
+
+/* ---------- pizza story ---------- */
+function pizzaSVG(shares,holders,rad){
+  const C=100,tot=Object.values(shares).reduce((a,b)=>a+b,0)||1;
+  let a0=-Math.PI/2,out="";
+  const pt=(r,a)=>[C+r*Math.cos(a),C+r*Math.sin(a)];
+  out+=`<circle cx="${C}" cy="${C}" r="${rad+7}" fill="#D9A066"/><circle cx="${C}" cy="${C}" r="${rad+3}" fill="#C68A4E"/>`;
+  holders.forEach(h=>{const v=(shares[h.key]||0)/tot;if(v<=0)return;const a1=a0+v*2*Math.PI;const [x0,y0]=pt(rad,a0),[x1,y1]=pt(rad,a1);
+    out+=v>=0.999?`<circle cx="${C}" cy="${C}" r="${rad}" fill="${h.color}"/>`:`<path d="M${C} ${C}L${x0.toFixed(2)} ${y0.toFixed(2)}A${rad} ${rad} 0 ${v>0.5?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${h.color}"/>`;
+    if(v<0.999){const [lx,ly]=pt(rad,a0);out+=`<path d="M${C} ${C}L${lx.toFixed(2)} ${ly.toFixed(2)}" stroke="#FFF6E5" stroke-width="2"/>`}
+    a0=a1});
+  let seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  const n=Math.round(rad/7);
+  for(let i=0;i<n;i++){const r=rad*0.25+rnd()*rad*0.62,a=rnd()*Math.PI*2;const [x,y]=pt(r,a);out+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rad/14).toFixed(1)}" fill="#B23A2A" opacity=".55"/><circle cx="${(x-1).toFixed(1)}" cy="${(y-1).toFixed(1)}" r="${(rad/40).toFixed(1)}" fill="#fff" opacity=".35"/>`}
+  for(let i=0;i<n;i++){const r=rad*0.2+rnd()*rad*0.7,a=rnd()*Math.PI*2;const [x,y]=pt(r,a);out+=`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l3 -2" stroke="#2E7D3A" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>`}
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="Pizza chart of ownership">${out}</svg>`;
+}
+function renderStory(){
+  const el=$("panels");if(!el)return;
+  const M=compute();if(M.error||!M.rounds.length){el.innerHTML="";return}
+  const posts=[null,...M.rounds.map(r=>r.post)];const maxP=Math.max(...M.rounds.map(r=>r.post));
+  const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
+  const caps=[
+    (f,v,st)=>`Day one. The founders own the whole pizza${M.holders.some(h=>h.type==="advisor"&&st.shares[h.key])?" (minus a sliver for the mentor who brought the garlic bread)":""}. It’s worth roughly nothing, but it smells amazing.`,
+    (f,v)=>`The seed fund buys a slice and the ESOP pool grabs one too. Founders now own ${pct(f,0)}, but of a ${cr(v,0)} pizza.`,
+    (f,v)=>`The ESOP pool shows up hungry again and gets fed <i>before</i> the new investor sits down. Classic option pool shuffle.`,
+    (f,v)=>`Bigger round, bigger slices for investors. The founders’ ${pct(f,0)} of a ${cr(v,0)} pizza is now worth about ${cr(f*v,0)} on paper.`
+  ];
+  el.innerHTML=M.stages.map((st,i)=>{
+    const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const f=fKeys.reduce((a,k)=>a+(st.shares[k]||0),0)/tot;const v=posts[i];
+    const rad=i===0?38:38+52*Math.sqrt(v/maxP);
+    const cap=(caps[Math.min(i,caps.length-1)])(f,v,st);
+    return `<article class="panel-c"><span class="step">STEP ${i+1}</span><h3>${esc(st.label)}</h3><div class="pz">${pizzaSVG(st.shares,M.holders,rad)}</div>
+      <div class="worth"><span>Founders own<br><b>${pct(f,1)}</b></span><span style="text-align:right">Pizza worth<br><b>${i===0?"An idea":cr(v,0)}</b></span></div><p>${cap}</p></article>`}).join("");
+  const last=M.rounds[M.rounds.length-1];const fEnd=fKeys.reduce((a,k)=>a+M.holders.find(h=>h.key===k).shares,0)/M.total;const s0=M.stages[0].shares,t0=Object.values(s0).reduce((a,b)=>a+b,0)||1;const f0=fKeys.reduce((a,k)=>a+(s0[k]||0),0)/t0;
+  $("moral").innerHTML=`Moral of the story: a smaller slice of a much bigger pizza can still be a great meal. The founders went from ${pct(f0,0)} of an idea to ${pct(fEnd,0)} of a ${cr(last.post,0)} company.`;
+}
+const FACE=`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#E8B48A"/><path d="M5 14c0-8 6-12 12-12s12 4 12 12c-3-4-7-6-12-6S8 10 5 14z" fill="#2B2B33"/><circle cx="12.5" cy="17" r="1.6" fill="#2B2B33"/><circle cx="21.5" cy="17" r="1.6" fill="#2B2B33"/><path d="M12 24q5 -3 10 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+function quip(text){return `<div class="quip">${FACE}<span>${text}</span></div>`}
 
 let heroDrawn=false;
 function renderHero(M){
@@ -652,6 +732,7 @@ function renderHero(M){
   g.innerHTML=segs.map(s=>`<circle class="seg" cx="110" cy="110" r="${R}" fill="none" stroke="${s.h.color}" stroke-width="34" stroke-dasharray="${heroDrawn?`${Math.max(0,s.len-1.5)} ${C}`:`0 ${C}`}" stroke-dashoffset="${heroDrawn?-s.off:0}"><title>${esc(s.h.name)}: ${pct(s.len/C)}</title></circle>`).join("");
   if(!heroDrawn){requestAnimationFrame(()=>requestAnimationFrame(()=>{g.querySelectorAll("circle").forEach((c,i)=>{c.setAttribute("stroke-dasharray",`${Math.max(0,segs[i].len-1.5)} ${C}`);c.setAttribute("stroke-dashoffset",-segs[i].off)});heroDrawn=true}))}
   $("hcPct").textContent=pct(fEnd,0);
+  const bub=$("bubble");if(bub)bub.innerHTML=fEnd>=0.75?"“Still in charge. For now.”":fEnd>=0.4?`“Wait… we only own ${pct(fEnd,0)}?”`:fEnd>=0.2?`“${pct(fEnd,0)}?! Who invited all these people?”`:"“Is it still our company?”";
   $("hcLbl").textContent=last?`after ${last.name}`:"at founding";
   $("heroLegend").innerHTML=hs.map(h=>`<span><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("");
   const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
@@ -714,7 +795,7 @@ function printReport(){
   setTimeout(()=>{if(document.querySelector('.tabpanel[data-was-hidden="1"]:not([hidden])'))restore()},1500);
 }
 
-renderInputs();renderOutputs();
+renderInputs();renderOutputs();renderStory();
 })();
 </script>
 </body>
