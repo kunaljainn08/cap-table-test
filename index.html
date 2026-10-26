@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script>
+try{var t=localStorage.getItem("capview-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}
 try{if("scrollRestoration" in history)history.scrollRestoration="manual";if(location.hash)history.replaceState(null,"",location.pathname+location.search);}catch(e){}
 </script>
 <meta charset="utf-8">
@@ -246,6 +247,17 @@ footer.site span:nth-child(2){font-style:italic}
 .lcard dt{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:8px}
 .lcard dd{margin:2px 0 0;font-size:14px;color:var(--ink)}
 .learn-next{text-align:center;margin:16px 0 0;font-weight:600}
+nav.site .links{min-width:0;margin-left:auto}
+.hide-sm{display:inline}@media (max-width:560px){.hide-sm{display:none}}
+.theme-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;width:36px;height:34px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex:none;cursor:pointer}
+.theme-btn .i-sun{display:none}.theme-btn.is-dark .i-sun{display:block}.theme-btn.is-dark .i-moon{display:none}
+.go-btn{width:100%;margin-top:14px;padding:13px;font-size:16px;border-radius:12px}
+.go-note{font-size:12.5px;color:var(--muted);text-align:center;margin:6px 0 0}
+@keyframes flashy{0%{box-shadow:0 0 0 0 var(--brand)}40%{box-shadow:0 0 0 8px color-mix(in srgb,var(--brand) 35%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+.hero-art.flash{animation:flashy 1.4s ease-out 1}
+@media (prefers-reduced-motion:reduce){.hero-art.flash{animation:none}}
+section[id],header[id]{scroll-margin-top:84px}
+@media (max-width:560px){nav.site .in{gap:8px;padding:10px 12px}nav.site .links a{padding:6px 7px;font-size:13.5px}}
 .ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
 .empty-card{display:flex;gap:14px;align-items:center}
 .empty-card svg{flex:none}
@@ -262,8 +274,9 @@ footer.site span:nth-child(2){font-style:italic}
     <div class="links">
       <a href="#learn">Learn</a>
       <a href="#about">About</a>
-      <a href="#story">The Story</a><a href="#simulator" class="cta">Open Simulator</a>
+      <a href="#story">The Story</a><a href="#simulator" class="cta"><span class="hide-sm">Open </span>Simulator</a>
     </div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch to dark mode" title="Switch theme"><svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="currentColor"/></svg><svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
 </nav>
 
@@ -314,9 +327,9 @@ footer.site span:nth-child(2){font-style:italic}
 </section>
 
 <section class="band" id="simulator" aria-labelledby="simhead">
-  <div class="section-head"><h2 id="simhead">The Simulator</h2><p>It starts empty. Enter your own numbers, or click <b>Load Example</b> to see a worked case first. Everything recalculates as you type, and refreshing the page clears it.</p></div>
+  <div class="section-head"><h2 id="simhead">The Simulator</h2><p>It opens with a worked example, so every chart on the page shows results straight away. Click <b>Clear &amp; Enter My Own</b> to type your startup’s numbers, then <b>Get My Results</b> to jump back to the top and see the whole story.</p></div>
   <div class="sim-shell">
-    <div class="sim-top"><b id="simTitle">Your Startup</b><div class="acts"><button class="btn" id="reset">Load Example</button><button class="btn" id="clear">Clear All</button><button class="btn" id="pdf">Save as PDF</button><button class="btn primary" id="xlsx">Download Excel</button></div></div>
+    <div class="sim-top"><b id="simTitle">Example: A SaaS Startup From Founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to Example</button><button class="btn" id="clear">Clear &amp; Enter My Own</button><button class="btn primary" id="go2">Get My Results ↑</button><button class="btn" id="pdf">Save as PDF</button><button class="btn" id="xlsx">Download Excel</button></div></div>
   <div class="grid">
     <div>
       <div class="panel">
@@ -345,6 +358,8 @@ footer.site span:nth-child(2){font-style:italic}
         <button class="add" id="addRound">Add Round</button>
         <div id="roundErr"></div>
       </div>
+      <button class="btn primary go-btn" id="go">Get My Results <span aria-hidden="true">↑</span></button>
+      <p class="go-note">Takes you to the top, where the donut, pizza story and moral now show your numbers.</p>
     </div>
 
     <div>
@@ -494,7 +509,12 @@ window.scrollTo(0,0);
 window.addEventListener("load",()=>{window.scrollTo(0,0);setTimeout(()=>window.scrollTo(0,0),120)});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(window.scrollY<5||!window.__userScrolled)window.scrollTo(0,0)});
 ["wheel","touchstart","keydown","mousedown"].forEach(ev=>window.addEventListener(ev,()=>{window.__userScrolled=true},{once:true,passive:true}));
-document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute("href").slice(1);e.preventDefault();window.__userScrolled=true;if(!id||id==="top"){window.scrollTo({top:0,behavior:"smooth"});return}const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})});
+function goTo(el){const nav=document.querySelector("nav.site");const off=(nav?nav.getBoundingClientRect().height:0)+14;const y=el.getBoundingClientRect().top+window.pageYOffset-off;window.scrollTo({top:Math.max(0,y),behavior:"smooth"})}
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const id=a.getAttribute("href").slice(1);e.preventDefault();window.__userScrolled=true;if(!id||id==="top"){window.scrollTo({top:0,behavior:"smooth"});return}const el=document.getElementById(id);if(el)goTo(el)});
+function effTheme(){const t=document.documentElement.getAttribute("data-theme");if(t)return t;return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}
+function syncThemeBtn(){const b=document.getElementById("themeBtn");if(!b)return;const d=effTheme()==="dark";b.setAttribute("aria-label",d?"Switch to light mode":"Switch to dark mode");b.classList.toggle("is-dark",d)}
+document.addEventListener("click",e=>{const b=e.target.closest("#themeBtn");if(!b)return;const next=effTheme()==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",next);try{localStorage.setItem("capview-theme",next)}catch(_){}syncThemeBtn()});
+document.addEventListener("DOMContentLoaded",syncThemeBtn);syncThemeBtn();
 window.addEventListener("pageshow",()=>window.scrollTo(0,0));
 (function(){
 "use strict";
@@ -510,7 +530,7 @@ const EXAMPLE={company:"Example SaaS startup",founders:[{name:"Founder A",shares
    {name:"Series B",investor:"Series B fund",pre:200,inv:50,pool:10,lp:1,part:false}]};
 let S;
 const BLANK={company:"",founders:[{name:"",shares:""},{name:"",shares:""}],advisors:[],pool0:"",seniority:"stacked",exit:null,rounds:[]};
-function load(){try{localStorage.removeItem("captable-v1")}catch(e){}return JSON.parse(JSON.stringify(BLANK))}
+function load(){try{localStorage.removeItem("captable-v1")}catch(e){}const x=JSON.parse(JSON.stringify(EXAMPLE));x.isExample=true;return x}
 function withState(st,fn){const prev=S;S=st;try{return fn()}finally{S=prev}}
 const exampleModel=()=>withState(JSON.parse(JSON.stringify(EXAMPLE)),compute);
 function save(){}
@@ -637,6 +657,7 @@ function renderAdvisors(){
   </div>`).join(""):`<p class="hint" style="margin:0 0 10px">No mentors yet. Typical grants are 0.25%–2%, usually vesting over 1–2 years.</p>`;
 }
 document.addEventListener("input",e=>{
+  if(e.target.closest&&e.target.closest(".grid")&&S)S.isExample=false;
   const t=e.target;
   if(t.id==="company"){S.company=t.value}
   else if(t.id==="pool0"){S.pool0=t.value}
@@ -650,6 +671,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("click",e=>{
   const t=e.target.closest("button");if(!t)return;
+  if(["addAdvisor","addFounder","addRound"].includes(t.id)||t.dataset.rmf!=null||t.dataset.rmr!=null||t.dataset.rma!=null)S.isExample=false;
   if(t.id==="addAdvisor"){(S.advisors||(S.advisors=[])).push({name:"",pct:"",at:0});renderAdvisors();renderOutputs()}
   else if(t.dataset.rma!=null){S.advisors.splice(+t.dataset.rma,1);renderAdvisors();renderOutputs()}
   else if(t.id==="addFounder"){S.founders.push({name:"",shares:""});save();renderInputs();renderOutputs()}
@@ -661,7 +683,8 @@ document.addEventListener("click",e=>{
     save();renderInputs();renderOutputs();
   }
   else if(t.dataset.rmr!=null){const ri=+t.dataset.rmr;S.rounds.splice(ri,1);(S.advisors||[]).forEach(a=>{const at=num(a.at);if(at===ri+1)a.at=0;else if(at>ri+1)a.at=at-1});save();renderInputs();renderOutputs()}
-  else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));renderInputs();renderOutputs();$("simTitle").textContent="Example: A SaaS Startup From Founding to Series B"}
+  else if(t.id==="reset"){S=JSON.parse(JSON.stringify(EXAMPLE));S.isExample=true;renderInputs();renderOutputs();$("simTitle").textContent="Example: A SaaS Startup From Founding to Series B"}
+  else if(t.id==="go"||t.id==="go2"){const M=compute();if(!(M.total>0)){alert("Enter each founder’s shares first, then your funding rounds.");return}renderOutputs();window.__userScrolled=true;window.scrollTo({top:0,behavior:"smooth"});const h=document.querySelector(".hero-art");if(h){h.classList.remove("flash");void h.offsetWidth;h.classList.add("flash")}}
   else if(t.id==="clear"){S=JSON.parse(JSON.stringify(BLANK));renderInputs();renderOutputs();$("simTitle").textContent="Your Startup"}
   else if(t.id==="xlsx"){downloadXlsx()}
   else if(t.id==="pdf"){printReport()}
@@ -775,7 +798,7 @@ function viewModel(needRounds){
   if(M.total>0&&(!needRounds||M.rounds.length))return {M,st:S,user:true};
   return null;
 }
-const tagHTML=u=>u?`<span class="live-tag user">Your numbers</span>`:`<span class="live-tag ex">Waiting for your numbers</span>`;
+const tagHTML=u=>u&&!S.isExample?`<span class="live-tag user">Your numbers</span>`:`<span class="live-tag ex">${u?"Worked example":"Waiting for your numbers"}</span>`;
 function ghostPizza(label){return `<svg viewBox="0 0 200 200" role="img" aria-label="Empty pizza"><circle cx="100" cy="100" r="72" fill="none" style="stroke:var(--line)" stroke-width="10" stroke-dasharray="10 8"/><circle cx="100" cy="100" r="60" style="fill:var(--soft)"/><text x="100" y="114" text-anchor="middle" font-size="44" font-family="Georgia,serif" style="fill:var(--muted)">?</text></svg>`}
 function renderStory(){
   const el=$("panels");if(!el)return;
@@ -788,7 +811,7 @@ function renderStory(){
     return;
   }
   const M=V.M;
-  if(sub)sub.innerHTML=tagHTML(V.user)+(V.user?"Built live from what you entered in the simulator. Change any number and the slices, values and moral update.":"Showing the worked example until you enter your own numbers in the simulator. Then this story becomes yours.");
+  if(sub)sub.innerHTML=tagHTML(V.user)+(V.user&&S.isExample?"This is the worked example from the simulator. Click Clear &amp; Enter My Own, add your numbers, and this story becomes yours.":V.user?"Built live from what you entered in the simulator. Change any number and the slices, values and moral update.":"Showing the worked example until you enter your own numbers in the simulator. Then this story becomes yours.");
   const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
   const maxP=Math.max(1,...M.rounds.map(r=>r.post));
   const openers=["Fresh dough arrives.","More guests at the table.","The pizza gets bigger.","Party-size upgrade.","Extra large, please.","The oven is running hot."];
