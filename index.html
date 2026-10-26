@@ -135,7 +135,7 @@ nav.site .links a.cta{background:var(--brand);color:var(--brand-ink)}
 .hero-art .grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px;opacity:.45;mask-image:radial-gradient(circle at 60% 40%,#000 0,transparent 75%);-webkit-mask-image:radial-gradient(circle at 60% 40%,#000 0,transparent 75%)}
 .hero-art .donut-wrap{position:relative;display:flex;justify-content:center;padding-top:6px}
 .hero-art svg.donut{width:min(260px,72%);height:auto}
-.donut circle.seg{transition:stroke-dasharray .9s cubic-bezier(.3,.7,.2,1),stroke-dashoffset .9s cubic-bezier(.3,.7,.2,1)}
+.donut circle.seg{transition:stroke-dasharray .9s cubic-bezier(.3,.7,.2,1),stroke-dashoffset .9s cubic-bezier(.3,.7,.2,1),transform .2s ease,stroke-width .2s ease,opacity .2s ease}
 @media (prefers-reduced-motion:reduce){.donut circle.seg{transition:none}}
 .tick{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;box-shadow:0 6px 18px -10px rgba(20,32,51,.35);line-height:1.35}
 .tick b{display:block;font-size:14.5px}
@@ -258,6 +258,23 @@ nav.site .links{min-width:0;margin-left:auto}
 @media (prefers-reduced-motion:reduce){.hero-art.flash{animation:none}}
 section[id],header[id]{scroll-margin-top:84px}
 @media (max-width:560px){nav.site .in{gap:8px;padding:10px 12px}nav.site .links a{padding:6px 7px;font-size:13.5px}}
+[data-slice]{cursor:pointer;outline:none;transition:transform .2s ease,opacity .2s ease,filter .2s ease}
+[data-slice].pop{transform:translate(var(--dx),var(--dy))}
+.donut circle.seg.pop{stroke-width:42}
+g.slice.pop{filter:drop-shadow(0 4px 4px rgba(0,0,0,.28))}
+svg.hovering [data-slice]:not(.pop){opacity:.42}
+[data-slice]:focus-visible{filter:drop-shadow(0 0 3px var(--brand))}
+@media (prefers-reduced-motion:reduce){[data-slice],.donut circle.seg{transition:none}}
+.hero-art svg.donut{overflow:visible}
+.panel-c .pz svg{overflow:visible}
+#sliceTip{position:fixed;z-index:80;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 14px 30px -14px rgba(0,0,0,.5);font-size:13px;min-width:190px;max-width:250px}
+#sliceTip[hidden]{display:none}
+.st-h{display:flex;align-items:center;gap:8px;font-size:14px}.st-h i{width:12px;height:12px;border-radius:3px;flex:none}
+.st-t{color:var(--muted);font-size:12px;margin:2px 0 8px}
+.st-g{display:grid;grid-template-columns:auto 1fr;gap:3px 12px}.st-g span{color:var(--muted)}.st-g b{text-align:right}
+.st-f{color:var(--muted);font-size:11.5px;margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.hero-legend .lg{cursor:pointer;border-radius:6px;padding:1px 4px}.hero-legend .lg:hover,.hero-legend .lg:focus-visible{background:var(--soft);color:var(--ink);outline:none}
+.tap-hint{flex-basis:100%;text-align:center;font-size:11.5px;color:var(--muted);opacity:.85;margin-top:2px}
 .ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
 .empty-card{display:flex;gap:14px;align-items:center}
 .empty-card svg{flex:none}
@@ -778,20 +795,27 @@ function renderExit(M){
 
 
 /* ---------- pizza story ---------- */
-function pizzaSVG(shares,holders,rad){
+const SLICES={};
+const htype=h=>h.type==="founder"?"Founder":h.type==="advisor"?"Mentor / advisor":h.type==="pool"?"ESOP pool (employees)":`${h.round||"Round"} investor`;
+function pizzaSVG(shares,holders,rad,si,post,label){
   const C=100,tot=Object.values(shares).reduce((a,b)=>a+b,0)||1;
-  let a0=-Math.PI/2,out="";
   const pt=(r,a)=>[C+r*Math.cos(a),C+r*Math.sin(a)];
-  out+=`<circle cx="${C}" cy="${C}" r="${rad+7}" fill="#D9A066"/><circle cx="${C}" cy="${C}" r="${rad+3}" fill="#C68A4E"/>`;
-  holders.forEach(h=>{const v=(shares[h.key]||0)/tot;if(v<=0)return;const a1=a0+v*2*Math.PI;const [x0,y0]=pt(rad,a0),[x1,y1]=pt(rad,a1);
-    out+=v>=0.999?`<circle cx="${C}" cy="${C}" r="${rad}" fill="${h.color}"/>`:`<path d="M${C} ${C}L${x0.toFixed(2)} ${y0.toFixed(2)}A${rad} ${rad} 0 ${v>0.5?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${h.color}"/>`;
-    if(v<0.999){const [lx,ly]=pt(rad,a0);out+=`<path d="M${C} ${C}L${lx.toFixed(2)} ${ly.toFixed(2)}" stroke="#FFF6E5" stroke-width="2"/>`}
-    a0=a1});
   let seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
-  const n=Math.round(rad/7);
-  for(let i=0;i<n;i++){const r=rad*0.25+rnd()*rad*0.62,a=rnd()*Math.PI*2;const [x,y]=pt(r,a);out+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rad/14).toFixed(1)}" fill="#B23A2A" opacity=".55"/><circle cx="${(x-1).toFixed(1)}" cy="${(y-1).toFixed(1)}" r="${(rad/40).toFixed(1)}" fill="#fff" opacity=".35"/>`}
-  for(let i=0;i<n;i++){const r=rad*0.2+rnd()*rad*0.7,a=rnd()*Math.PI*2;const [x,y]=pt(r,a);out+=`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l3 -2" stroke="#2E7D3A" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>`}
-  return `<svg viewBox="0 0 200 200" role="img" aria-label="Pizza chart of ownership">${out}</svg>`;
+  const n=Math.round(rad/7);const tops=[];
+  for(let i=0;i<n;i++){const r=rad*0.25+rnd()*rad*0.62,a=rnd()*Math.PI*2;tops.push({k:"pep",r,a})}
+  for(let i=0;i<n;i++){const r=rad*0.2+rnd()*rad*0.7,a=rnd()*Math.PI*2;tops.push({k:"basil",r,a})}
+  const norm=a=>{a=(a+Math.PI/2)%(2*Math.PI);return a<0?a+2*Math.PI:a};
+  let out=`<circle cx="${C}" cy="${C}" r="${rad+7}" fill="#D9A066"/><circle cx="${C}" cy="${C}" r="${rad+3}" fill="#C68A4E"/>`;
+  let a0=-Math.PI/2;
+  holders.forEach(h=>{const v=(shares[h.key]||0)/tot;if(v<=0)return;const a1=a0+v*2*Math.PI;const mid=(a0+a1)/2;const id=`p${si}:${h.key}`;
+    SLICES[id]={name:h.name,type:htype(h),pct:v,shares:shares[h.key],value:fin(post)?v*post:null,post,stage:label,color:h.color};
+    const [x0,y0]=pt(rad,a0),[x1,y1]=pt(rad,a1);const pop=v>=0.999?0:Math.min(9,4+rad/14);
+    const shape=v>=0.999?`<circle cx="${C}" cy="${C}" r="${rad}" fill="${h.color}"/>`:`<path d="M${C} ${C}L${x0.toFixed(2)} ${y0.toFixed(2)}A${rad} ${rad} 0 ${v>0.5?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${h.color}" stroke="#FFF6E5" stroke-width="1.6" stroke-linejoin="round"/>`;
+    const s0=norm(a0),s1=norm(a1)||2*Math.PI;
+    const mine=tops.filter(t=>{const ta=norm(t.a);return v>=0.999||(ta>=s0&&ta<(s1<=s0?2*Math.PI:s1))}).map(t=>{const [x,y]=pt(t.r,t.a);return t.k==="pep"?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(rad/14).toFixed(1)}" fill="#B23A2A" opacity=".55"/><circle cx="${(x-1).toFixed(1)}" cy="${(y-1).toFixed(1)}" r="${(rad/40).toFixed(1)}" fill="#fff" opacity=".35"/>`:`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l3 -2" stroke="#2E7D3A" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>`}).join("");
+    out+=`<g class="slice" data-slice="${id}" tabindex="0" role="button" aria-label="${esc(h.name)}: ${pct(v,1)}" style="--dx:${(Math.cos(mid)*pop).toFixed(1)}px;--dy:${(Math.sin(mid)*pop).toFixed(1)}px">${shape}<g pointer-events="none">${mine}</g></g>`;
+    a0=a1});
+  return `<svg viewBox="-12 -12 224 224" role="img" aria-label="Pizza chart of ownership. Hover or tap a slice for details.">${out}</svg>`;
 }
 function viewModel(needRounds){
   const M=compute();
@@ -811,7 +835,7 @@ function renderStory(){
     return;
   }
   const M=V.M;
-  if(sub)sub.innerHTML=tagHTML(V.user)+(V.user&&S.isExample?"This is the worked example from the simulator. Click Clear &amp; Enter My Own, add your numbers, and this story becomes yours.":V.user?"Built live from what you entered in the simulator. Change any number and the slices, values and moral update.":"Showing the worked example until you enter your own numbers in the simulator. Then this story becomes yours.");
+  if(sub)sub.innerHTML=tagHTML(V.user)+(V.user&&S.isExample?"This is the worked example from the simulator. Hover or tap any slice to see who owns it. Click Clear &amp; Enter My Own, add your numbers, and this story becomes yours.":V.user?"Built live from what you entered in the simulator. Hover or tap any slice to see who owns it, and change any number to watch the slices, values and moral update.":"Showing the worked example until you enter your own numbers in the simulator. Then this story becomes yours.");
   const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
   const maxP=Math.max(1,...M.rounds.map(r=>r.post));
   const openers=["Fresh dough arrives.","More guests at the table.","The pizza gets bigger.","Party-size upgrade.","Extra large, please.","The oven is running hot."];
@@ -832,7 +856,7 @@ function renderStory(){
       if(adv.length)cap+=` ${esc(adv.join(" and "))} join${adv.length>1?"":"s"} as mentor${adv.length>1?"s":""}.`;
       cap+=` Founders now own ${pct(f,1)}, worth about ${cr(f*r.post,1)} on paper.`;
     }
-    return `<article class="panel-c"><span class="step">STEP ${i+1}</span><h3>${esc(st.label)}</h3><div class="pz">${pizzaSVG(st.shares,M.holders,rad)}</div>
+    return `<article class="panel-c"><span class="step">STEP ${i+1}</span><h3>${esc(st.label)}</h3><div class="pz">${pizzaSVG(st.shares,M.holders,rad,i,r?r.post:null,st.label)}</div>
       <div class="worth"><span>Founders own<br><b>${pct(f,1)}</b></span><span style="text-align:right">Pizza worth<br><b>${r?cr(r.post,1):"An idea"}</b></span></div><p>${cap}</p></article>`}).join("");
   const mo=$("moral");if(!mo)return;
   if(!M.rounds.length){mo.innerHTML="Moral of the story: the whole pizza is yours, but it’s only an idea until someone pays for a slice. Add a funding round and watch what happens.";return}
@@ -893,11 +917,29 @@ function renderHeroEmpty(){
   $("tick2").innerHTML=`<span class="muted">Latest round</span><b>—</b>`;
   $("tick3").innerHTML=`<span class="muted">Founders own</span><b>—</b>`;
 }
+/* ---------- slice hover / tap ---------- */
+let pinned=null;
+function tipEl(){let t=document.getElementById("sliceTip");if(!t){t=document.createElement("div");t.id="sliceTip";t.setAttribute("role","tooltip");t.hidden=true;document.body.appendChild(t)}return t}
+function sliceHTML(d){return `<div class="st-h"><i style="background:${d.color}"></i><b>${esc(d.name)}</b></div><div class="st-t">${esc(d.type)} · ${esc(d.stage)}</div><div class="st-g"><span>Stake</span><b>${pct(d.pct,1)}</b><span>Shares</span><b>${nf(d.shares,0)}</b><span>Worth</span><b>${fin(d.value)?cr(d.value,1):"an idea, for now"}</b></div>${fin(d.post)?`<div class="st-f">at a ${cr(d.post,0)} post-money valuation</div>`:""}`}
+function placeTip(t,x,y){const w=t.offsetWidth,h=t.offsetHeight;let L=x+16,T=y+16;if(L+w>window.innerWidth-8)L=x-w-16;if(L<8)L=8;if(T+h>window.innerHeight-8)T=y-h-16;if(T<8)T=8;t.style.left=L+"px";t.style.top=T+"px"}
+function heroCenter(d){const hp=$("hcPct"),hm=$("hcMid"),hl=$("hcLbl");if(!hp)return;if(d){hp.textContent=pct(d.pct,0);if(hm)hm.textContent=d.name.length>18?d.name.slice(0,17)+"…":d.name;if(hl)hl.textContent=d.type.replace(" (employees)","")}else{hp.textContent=hp.dataset.d||hp.textContent;if(hm)hm.textContent=hm.dataset.d||"founders";const V=viewModel(false);if(hl&&V){const last=V.M.rounds[V.M.rounds.length-1];hl.textContent=last?`after ${last.name}`:"at founding"}}}
+function showSlice(el,x,y){const id=el.dataset.slice;const d=SLICES[id];if(!d)return;const svg=el.closest("svg");document.querySelectorAll("[data-slice].pop").forEach(n=>{if(n!==el)n.classList.remove("pop")});document.querySelectorAll("svg.hovering").forEach(n=>{if(n!==svg)n.classList.remove("hovering")});el.classList.add("pop");if(svg)svg.classList.add("hovering");const t=tipEl();t.innerHTML=sliceHTML(d);t.hidden=false;if(x==null){const r=el.getBoundingClientRect();x=r.left+r.width/2;y=r.top}placeTip(t,x,y);if(d.hero)heroCenter(d)}
+function hideSlice(force){if(pinned&&!force)return;pinned=null;document.querySelectorAll("[data-slice].pop").forEach(n=>n.classList.remove("pop"));document.querySelectorAll("svg.hovering").forEach(n=>n.classList.remove("hovering"));const t=document.getElementById("sliceTip");if(t)t.hidden=true;heroCenter(null)}
+const sliceOf=t=>t&&t.closest?t.closest("[data-slice]"):null;
+const hoverOf=t=>{const l=t&&t.closest?t.closest("[data-hover]"):null;return l?document.querySelector(`[data-slice="${l.dataset.hover}"]`):null};
+document.addEventListener("mouseover",e=>{if(pinned)return;const el=sliceOf(e.target)||hoverOf(e.target);if(el)showSlice(el,e.clientX,e.clientY)});
+document.addEventListener("mousemove",e=>{if(pinned)return;const el=sliceOf(e.target);if(el){const t=document.getElementById("sliceTip");if(t&&!t.hidden)placeTip(t,e.clientX,e.clientY)}});
+document.addEventListener("mouseout",e=>{if(pinned)return;const from=sliceOf(e.target)||(e.target.closest&&e.target.closest("[data-hover]"));if(!from)return;const to=e.relatedTarget;if(to&&from.contains&&from.contains(to))return;hideSlice()});
+document.addEventListener("click",e=>{const el=sliceOf(e.target)||hoverOf(e.target);if(el){if(pinned===el){hideSlice(true);return}pinned=null;showSlice(el,e.clientX||null,e.clientY||null);pinned=el;return}if(pinned)hideSlice(true)});
+document.addEventListener("focusin",e=>{const el=sliceOf(e.target)||hoverOf(e.target);if(el&&!pinned)showSlice(el)});
+document.addEventListener("focusout",e=>{if(sliceOf(e.target)||(e.target.closest&&e.target.closest("[data-hover]")))hideSlice()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideSlice(true);const el=sliceOf(e.target);if(el&&(e.key==="Enter"||e.key===" ")){e.preventDefault();el.dispatchEvent(new MouseEvent("click",{bubbles:true}))}});
+window.addEventListener("scroll",()=>{if(!pinned){const t=document.getElementById("sliceTip");if(t&&!t.hidden)hideSlice()}else{const t=tipEl();const r=pinned.getBoundingClientRect();placeTip(t,r.left+r.width/2,r.top)}},{passive:true});
 function renderLinked(){
   const V=viewModel(false);
   if(V)renderHero(V.M);else renderHeroEmpty();
   const t=$("exTag");if(t)t.textContent=V?(S.company?S.company:"Your startup"):"Your startup";
-  renderStory();
+  hideSlice(true);renderStory();
 }
 const FACE=`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#E8B48A"/><path d="M5 14c0-8 6-12 12-12s12 4 12 12c-3-4-7-6-12-6S8 10 5 14z" fill="#2B2B33"/><circle cx="12.5" cy="17" r="1.6" fill="#2B2B33"/><circle cx="21.5" cy="17" r="1.6" fill="#2B2B33"/><path d="M12 24q5 -3 10 0" fill="none" stroke="#2B2B33" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 function quip(text){return `<div class="quip">${FACE}<span>${text}</span></div>`}
@@ -911,15 +953,17 @@ function renderHero(M){
   const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
   const last=M.rounds[M.rounds.length-1];
   if(!svg.querySelector(".segs")||!svg.querySelector('circle[style*="stroke:var(--line)"]:not([stroke-dasharray])')){
-    svg.innerHTML=`<circle cx="110" cy="110" r="${R}" fill="none" style="stroke:var(--line)" stroke-width="34"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="106" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="38" style="fill:var(--ink)" id="hcPct"></text><text x="110" y="126" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">founders</text><text x="110" y="141" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl"></text>`;
+    svg.innerHTML=`<circle cx="110" cy="110" r="${R}" fill="none" style="stroke:var(--line)" stroke-width="34"/><g class="segs" transform="rotate(-90 110 110)"></g><text x="110" y="106" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="38" style="fill:var(--ink)" id="hcPct"></text><text x="110" y="126" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcMid">founders</text><text x="110" y="141" text-anchor="middle" font-size="11.5" style="fill:var(--muted)" id="hcLbl"></text>`;
   }
   const g=svg.querySelector(".segs");
-  g.innerHTML=segs.map(s=>`<circle class="seg" cx="110" cy="110" r="${R}" fill="none" stroke="${s.h.color}" stroke-width="34" stroke-dasharray="${heroDrawn?`${Math.max(0,s.len-1.5)} ${C}`:`0 ${C}`}" stroke-dashoffset="${heroDrawn?-s.off:0}"><title>${esc(s.h.name)}: ${pct(s.len/C)}</title></circle>`).join("");
+  segs.forEach(sg=>{const v=sg.len/C;SLICES["h:"+sg.h.key]={name:sg.h.name,type:htype(sg.h),pct:v,shares:sg.h.shares,value:last?v*last.post:null,post:last?last.post:null,stage:last?"after "+last.name:"at founding",color:sg.h.color,hero:true}});
+  g.innerHTML=segs.map(sg=>{const a=(sg.off+sg.len/2)/C*2*Math.PI;return `<circle class="seg" data-slice="h:${sg.h.key}" tabindex="0" role="button" aria-label="${esc(sg.h.name)}: ${pct(sg.len/C,1)}" style="--dx:${(Math.cos(a)*9).toFixed(1)}px;--dy:${(Math.sin(a)*9).toFixed(1)}px" cx="110" cy="110" r="${R}" fill="none" stroke="${sg.h.color}" stroke-width="34" stroke-dasharray="${heroDrawn?`${Math.max(0,sg.len-1.5)} ${C}`:`0 ${C}`}" stroke-dashoffset="${heroDrawn?-sg.off:0}"></circle>`}).join("");
   if(!heroDrawn){requestAnimationFrame(()=>requestAnimationFrame(()=>{g.querySelectorAll("circle").forEach((c,i)=>{c.setAttribute("stroke-dasharray",`${Math.max(0,segs[i].len-1.5)} ${C}`);c.setAttribute("stroke-dashoffset",-segs[i].off)});heroDrawn=true}))}
-  $("hcPct").textContent=pct(fEnd,0);
+  $("hcPct").textContent=pct(fEnd,0);$("hcPct").dataset.d=pct(fEnd,0);if($("hcMid")){$("hcMid").textContent="founders";$("hcMid").dataset.d="founders"}
   const bub=$("bubble");if(bub)bub.innerHTML=fEnd>=0.75?"“Still in charge. For now.”":fEnd>=0.4?`“Wait… we only own ${pct(fEnd,0)}?”`:fEnd>=0.2?`“${pct(fEnd,0)}?! Who invited all these people?”`:"“Is it still our company?”";
   $("hcLbl").textContent=last?`after ${last.name}`:"at founding";
-  $("heroLegend").innerHTML=hs.map(h=>`<span><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("");
+  $("heroLegend").innerHTML=hs.map(h=>`<span class="lg" data-hover="h:${h.key}" tabindex="0"><i class="sw" style="background:${h.color}"></i>${esc(h.name)}</span>`).join("")+`<span class="tap-hint">Hover or tap a slice to see who owns it</span>`;
+  const hp=$("hcPct"),hm=$("hcMid"),hl=$("hcLbl");if(hp){hp.dataset.d=hp.textContent||pct(fEnd,0);}
   const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
   $("tick1").innerHTML=`<span class="muted">Raised in ${M.rounds.length} round${M.rounds.length===1?"":"s"}</span><b>${cr(raised,0)}</b>`;
   $("tick2").innerHTML=last?`<span class="muted"><i style="background:${INV_C[(M.rounds.length-1)%INV_C.length]}"></i>${esc(last.name)}</span><b>${cr(last.inv,0)} at ${cr(last.post,0)} post</b>`:"";
