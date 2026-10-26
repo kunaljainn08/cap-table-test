@@ -275,11 +275,59 @@ svg.hovering [data-slice]:not(.pop){opacity:.42}
 .st-f{color:var(--muted);font-size:11.5px;margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
 .hero-legend .lg{cursor:pointer;border-radius:6px;padding:1px 4px}.hero-legend .lg:hover,.hero-legend .lg:focus-visible{background:var(--soft);color:var(--ink);outline:none}
 .tap-hint{flex-basis:100%;text-align:center;font-size:11.5px;color:var(--muted);opacity:.85;margin-top:2px}
+
+/* ---------- designed PDF report ---------- */
+.cvr{width:794px;background:#fff;color:#152033;font-family:"Instrument Sans",Arial,sans-serif;font-size:11.5px;line-height:1.45}
+.cvr .cv-p{width:794px;height:1122px;position:relative;overflow:hidden;padding:30px 38px 44px;background:#fff}
+.cvr .cv-p.p1{padding:0}
+.cvr .cv-band{background:linear-gradient(120deg,#1F3A93,#14286B);color:#fff;padding:26px 38px 22px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden}
+.cvr .cv-band::after{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;background:#E0A030;opacity:.2}
+.cvr .cv-tag{display:inline-block;background:#E0A030;color:#152033;font-size:10.5px;font-weight:700;letter-spacing:.12em;border-radius:4px;padding:2px 8px}
+.cvr h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:38px;margin:8px 0 4px;line-height:1.05}
+.cvr .cv-sub{font-size:11px;opacity:.85}
+.cvr .cv-logo{position:relative;z-index:1;background:#fff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;color:#152033;font-size:18px}
+.cvr .cv-logo b,.cvr .cv-mini b{font-weight:400}.cvr .cv-logo i,.cvr .cv-mini i{font-style:normal;font-weight:700;color:#1F3A93}
+.cvr .cv-kpis{display:grid;grid-template-columns:repeat(6,1fr);background:#E6EBF8;border-bottom:3px solid #E0A030}
+.cvr .cv-kpis div{padding:10px 12px;border-right:1px solid rgba(0,0,0,.06)}.cvr .cv-kpis div:last-child{border-right:0}
+.cvr .cv-kpis span{display:block;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:#5E6B7D}.cvr .cv-kpis b{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:21px;color:#1F3A93}
+.cvr .cv-body{padding:16px 38px 0}
+.cvr .cv-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cvr .cv-card{border:1px solid #DCE1E8;border-radius:12px;padding:12px 14px;background:#fff}
+.cvr .cv-card h3{margin:0 0 8px;font-size:13px;color:#1F3A93}
+.cvr .cv-dw{display:flex;gap:10px;align-items:center}
+.cvr .cv-leg{border-collapse:collapse;font-size:10.5px;flex:1}.cvr .cv-leg td{padding:2px 0}.cvr .cv-leg td:last-child{text-align:right;font-weight:700}.cvr .cv-leg i,.cvr .cv-t i,.cvr .cv-legs i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+.cvr .cv-verdict{margin-top:8px;border:2px solid;border-radius:10px;padding:5px 10px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;text-align:center;transform:rotate(-1.2deg)}
+.cvr .cv-moral{font-family:"Instrument Serif",Georgia,serif;font-size:19px;line-height:1.3;margin:0 0 10px}
+.cvr .cv-call{background:#FDF1DC;border-left:3px solid #E0A030;border-radius:0 8px 8px 0;padding:7px 10px;margin-top:8px;font-size:11px}
+.cvr .cv-sec{font-size:14px;color:#1F3A93;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #E0A030}
+.cvr .cv-pz{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.cvr .cv-pzc{border:2px solid #152033;border-radius:12px;padding:8px;text-align:center;box-shadow:4px 4px 0 #152033;background:#fff}
+.cvr .cv-pzc b{display:block;font-size:12px}.cvr .cv-pzc svg,.cvr .cv-pzc img{display:block;margin:2px auto}.cvr img.svgimg{max-width:none}.cvr .cv-pzc span{display:block;font-weight:700;font-size:11.5px;color:#1F3A93}.cvr .cv-pzc small{color:#5E6B7D;font-size:10px}
+.cvr .cv-foot{position:absolute;left:38px;right:38px;bottom:16px;display:flex;justify-content:space-between;font-size:9.5px;color:#8A97A8;border-top:2px solid #1F3A93;padding-top:5px}
+.cvr .cv-top{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8A97A8;border-bottom:1px solid #DCE1E8;padding-bottom:6px}
+.cvr .cv-mini{display:flex;align-items:center;gap:6px;color:#152033;font-size:13px}.cvr .cv-mini svg{width:22px;height:22px}
+.cvr .cv-h{display:flex;gap:14px;align-items:center;margin:14px 0 12px}
+.cvr .cv-n{font-family:"Instrument Serif",Georgia,serif;font-size:44px;color:#E0A030;line-height:1}
+.cvr .cv-k{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A97A8}
+.cvr .cv-h h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:30px;margin:0;color:#1F3A93;line-height:1.05}
+.cvr .cv-legs{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:10.5px;color:#5E6B7D;margin-top:8px}
+.cvr .cv-t{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:12px}
+.cvr .cv-t th{background:#1F3A93;color:#fff;padding:6px 7px;text-align:right;font-weight:600;font-size:10px}.cvr .cv-t th:first-child{text-align:left}
+.cvr .cv-t td{padding:5px 7px;border-bottom:1px solid #EEF1F5;text-align:right}.cvr .cv-t td:first-child{text-align:left}
+.cvr .cv-t td small{display:block;color:#8A97A8;font-size:9px;margin-left:15px}
+.cvr .cv-t tr:nth-child(even) td{background:#F6F8FB}.cvr .cv-t tr.tot td{font-weight:700;background:#E6EBF8}
+.cvr .cv-t td i{font-style:normal;color:#8A97A8;font-size:9px}
+.cvr .cv-t.sm{margin-top:0}.cvr .cv-t.sm td,.cvr .cv-t.sm th{padding:4px 5px}
+.cvr .cv-note{font-size:10.5px;color:#5E6B7D;margin:6px 0 0}
+.cvr .cv-ul{margin:0;padding-left:16px;font-size:10.8px}.cvr .cv-ul li{margin:3px 0}
+.cvr .cv-disc{margin-top:12px;font-size:9.8px;color:#5E6B7D;border-top:2px solid #1F3A93;padding-top:8px}
+
 .ex-tag{position:absolute;top:14px;left:14px;font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:2px 10px;z-index:1}
 .empty-card{display:flex;gap:14px;align-items:center}
 .empty-card svg{flex:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <nav class="site" aria-label="Main">
@@ -346,7 +394,7 @@ svg.hovering [data-slice]:not(.pop){opacity:.42}
 <section class="band" id="simulator" aria-labelledby="simhead">
   <div class="section-head"><h2 id="simhead">The Simulator</h2><p>It opens with a worked example, so every chart on the page shows results straight away. Click <b>Clear &amp; Enter My Own</b> to type your startup’s numbers, then <b>Get My Results</b> to jump back to the top and see the whole story.</p></div>
   <div class="sim-shell">
-    <div class="sim-top"><b id="simTitle">Example: A SaaS Startup From Founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to Example</button><button class="btn" id="clear">Clear &amp; Enter My Own</button><button class="btn primary" id="go2">Get My Results ↑</button><button class="btn" id="pdf">Save as PDF</button><button class="btn" id="xlsx">Download Excel</button></div></div>
+    <div class="sim-top"><b id="simTitle">Example: A SaaS Startup From Founding to Series B</b><div class="acts"><button class="btn" id="reset">Reset to Example</button><button class="btn" id="clear">Clear &amp; Enter My Own</button><button class="btn primary" id="go2">Get My Results ↑</button><button class="btn" id="pdf">Download PDF Report</button><button class="btn" id="xlsx">Download Excel</button></div></div>
   <div class="grid">
     <div>
       <div class="panel">
@@ -704,7 +752,7 @@ document.addEventListener("click",e=>{
   else if(t.id==="go"||t.id==="go2"){const M=compute();if(!(M.total>0)){alert("Enter each founder’s shares first, then your funding rounds.");return}renderOutputs();window.__userScrolled=true;window.scrollTo({top:0,behavior:"smooth"});const h=document.querySelector(".hero-art");if(h){h.classList.remove("flash");void h.offsetWidth;h.classList.add("flash")}}
   else if(t.id==="clear"){S=JSON.parse(JSON.stringify(BLANK));renderInputs();renderOutputs();$("simTitle").textContent="Your Startup"}
   else if(t.id==="xlsx"){downloadXlsx()}
-  else if(t.id==="pdf"){printReport()}
+  else if(t.id==="pdf"){downloadReport(t)}
   else if(t.dataset.tab){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b===t?"true":"false"));document.querySelectorAll(".tabpanel").forEach(p=>p.hidden=p.id!=="tab-"+t.dataset.tab)}
 });
 
@@ -1014,6 +1062,103 @@ function downloadXlsx(){
   }
   X.writeFile(wb,fileName("xlsx"));
 }
+
+/* ================= designed PDF report ================= */
+function rDonut(M,size){
+  const R=78,C=2*Math.PI*R;let off=0;const hs=M.holders.filter(h=>h.shares>0);
+  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/(M.total||1);
+  let g=hs.map(h=>{const len=h.shares/M.total*C;const c=`<circle cx="100" cy="100" r="${R}" fill="none" stroke="${h.color}" stroke-width="36" stroke-dasharray="${Math.max(0,len-1.2).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"/>`;off+=len;return c}).join("");
+  return `<svg width="${size}" height="${size}" viewBox="0 0 200 200"><circle cx="100" cy="100" r="${R}" fill="none" stroke="#E6EAF0" stroke-width="36"/><g transform="rotate(-90 100 100)">${g}</g><text x="100" y="98" text-anchor="middle" font-family="Instrument Serif,Georgia,serif" font-size="34" fill="#152033">${pct(fEnd,0)}</text><text x="100" y="117" text-anchor="middle" font-family="Arial" font-size="10.5" fill="#5E6B7D">founders own</text></svg>`;
+}
+function rStack(M,w){
+  const rowH=26,gap=10,L=92;const h=M.stages.length*(rowH+gap);let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" font-family="Arial">`;
+  M.stages.forEach((st,i)=>{const y=i*(rowH+gap);const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;let x=L;
+    s+=`<text x="0" y="${y+17}" font-size="11.5" font-weight="700" fill="#152033">${esc(st.label)}</text>`;
+    M.holders.forEach(hd=>{const v=(st.shares[hd.key]||0)/tot;if(v<=0)return;const ww=v*(w-L);s+=`<rect x="${x.toFixed(1)}" y="${y}" width="${Math.max(0.5,ww).toFixed(1)}" height="${rowH}" fill="${hd.color}"/>`;if(ww>34)s+=`<text x="${(x+ww/2).toFixed(1)}" y="${y+17}" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">${nf(v*100,0)}%</text>`;x+=ww});});
+  return s+`</svg>`;
+}
+function rPayBars(M,out,exit,w){
+  const rows=M.holders.filter(h=>h.shares>0);const mx=Math.max(1,...rows.map(h=>out[h.key]||0));const rowH=18,gap=6,L=150,Rr=80;
+  let s=`<svg width="${w}" height="${rows.length*(rowH+gap)}" viewBox="0 0 ${w} ${rows.length*(rowH+gap)}" font-family="Arial">`;
+  rows.forEach((h,i)=>{const y=i*(rowH+gap);const v=out[h.key]||0;const ww=v/mx*(w-L-Rr);s+=`<text x="0" y="${y+13}" font-size="10.5" fill="#152033">${esc(h.name.length>22?h.name.slice(0,21)+"…":h.name)}</text><rect x="${L}" y="${y}" width="${Math.max(1,ww).toFixed(1)}" height="${rowH}" rx="4" fill="${h.color}"/><text x="${(L+ww+6).toFixed(1)}" y="${y+13}" font-size="10.5" font-weight="700" fill="#152033">₹${nf(v,1)} cr</text>`});
+  return s+`</svg>`;
+}
+async function downloadReport(btn){
+  const M=compute();if(!(M.total>0)){alert("Enter each founder’s shares first, or reset to the example.");return}
+  if(!window.html2pdf){alert("The PDF maker needs an internet connection. Reload the page and try again.");return}
+  const label=btn?btn.textContent:"";if(btn){btn.disabled=true;btn.textContent="Preparing PDF…"}
+  const box=document.createElement("div");box.className="cvr";box.innerHTML=reportCV(M);
+  const holder=document.createElement("div");holder.style.cssText="position:absolute;left:0;top:0;width:794px;z-index:-5;opacity:0;pointer-events:none";holder.appendChild(box);document.body.appendChild(holder);
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const imgs=[...box.querySelectorAll("svg")].map(sv=>{const r=sv.getBoundingClientRect();const w=Math.round(+sv.getAttribute("width")||r.width),h=Math.round(+sv.getAttribute("height")||r.height);const xml=new XMLSerializer().serializeToString(sv);const im=new Image();im.width=w;im.height=h;im.style.cssText=sv.getAttribute("style")||"";im.className="svgimg";const done=new Promise(res=>{im.onload=res;im.onerror=res});im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(xml);sv.replaceWith(im);return done});
+    await Promise.all(imgs);
+    await html2pdf().set({margin:0,filename:fileName("pdf"),image:{type:"jpeg",quality:0.96},html2canvas:{scale:2,backgroundColor:"#FFFFFF",useCORS:true,scrollX:0,scrollY:0},jsPDF:{unit:"px",format:[794,1123],orientation:"portrait",hotfixes:["px_scaling"]},pagebreak:{mode:["legacy"]}}).from(box).save();
+  }catch(e){console.error(e);alert("The PDF could not be created in this browser. Try Chrome or Edge on a laptop.")}
+  finally{holder.remove();if(btn){btn.disabled=false;btn.textContent=label}}
+}
+function reportCV(M){
+  const co=S.company||"Your startup";const today=new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  const last=M.rounds[M.rounds.length-1];const hs=M.holders.filter(h=>h.shares>0||h.type==="founder");
+  const fEnd=M.holders.filter(h=>h.type==="founder").reduce((s,h)=>s+h.shares,0)/M.total;const raised=M.rounds.reduce((s,r)=>s+r.inv,0);
+  const foot=n=>`<div class="cv-foot"><span>CapView · ${esc(co)} · Cap Table Report</span><span>${n} / 3</span></div>`;
+  const top=(n,t,k)=>`<div class="cv-top"><span class="cv-mini">${LOGO_CV}<b>Cap<i>View</i></b></span><span>${esc(co)} · ${today}</span></div><div class="cv-h"><span class="cv-n">0${n}</span><div><span class="cv-k">${k}</span><h2>${t}</h2></div></div>`;
+  // values
+  const fKeys=M.holders.filter(h=>h.type==="founder").map(h=>h.key);
+  const stageF=st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;return fKeys.reduce((a,k)=>a+(st.shares[k]||0),0)/tot};
+  const maxP=Math.max(1,...M.rounds.map(r=>r.post));
+  const vals=M.rounds.map((r,k)=>stageF(M.stages[k+1])*r.post);
+  let moral="The founders own the whole pizza, but it’s only an idea until someone pays for a slice.";
+  if(last){const endVal=vals[vals.length-1],peak=Math.max(...vals);moral=(last.stepUp!=null&&last.stepUp<1)||endVal<peak-1e-9?`A smaller slice of a pizza that didn’t grow enough: the founders’ stake is worth ${cr(endVal,1)} on paper, down from ${cr(peak,1)}.`:`A smaller slice of a much bigger pizza: the founders went from ${pct(stageF(M.stages[0]),0)} of an idea to ${pct(fEnd,0)} of a ${cr(last.post,0)} company, worth about ${cr(endVal,1)} on paper.`}
+  const big=M.rounds.reduce((a,r)=>r.poolCostCr>(a?a.poolCostCr:0)?r:a,null);
+  // exit
+  const invs=M.holders.filter(h=>h.type==="investor"&&h.shares>0);
+  const exit=last?(fin(S.exit)&&S.exit>0?S.exit:last.post):null;
+  const W2=exit!=null&&invs.length?waterfall(M,exit,S.seniority):null;
+  const founders=M.holders.filter(h=>h.type==="founder");
+  let sens="";if(W2){const totInv=invs.reduce((s,h)=>s+h.invested,0);const xs=[0.5,1,2,3,5].map(m=>m*totInv).concat([last.post,last.post*2]).filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
+    sens=xs.map(v=>{const w=waterfall(M,v,S.seniority).out;const fg=founders.reduce((s,h)=>s+(w[h.key]||0),0);const ig=invs.reduce((s,h)=>s+(w[h.key]||0),0);const ad=M.holders.filter(h=>h.type==="advisor").reduce((s,h)=>s+(w[h.key]||0),0);return `<tr><td>${cr(v,0)}${Math.abs(v-last.post)<1e-9?" <i>latest post-money</i>":""}</td><td>${cr(fg,1)}</td><td>${pct(v>0?fg/v:0,0)}</td><td>${cr(ig,1)}</td><td>${cr(w.pool||0,1)}</td><td>${cr(ad,1)}</td></tr>`}).join("")}
+  const fGet=W2&&exit>0?founders.reduce((s,h)=>s+(W2.out[h.key]||0),0)/exit:null;
+  const verdict=fEnd>=0.6?["Founders firmly in control","#1E7A4C"]:fEnd>=0.4?["Founders still hold the biggest block","#1F3A93"]:fEnd>=0.25?["Founders are minority owners now","#B07B00"]:["Investors own most of the company","#B4321F"];
+  return `
+  <div class="cv-p p1">
+    <div class="cv-band"><div><span class="cv-tag">CAP TABLE REPORT</span><h1>${esc(co)}</h1><span class="cv-sub">${today} · Prepared with CapView by Kunal Jain</span></div><div class="cv-logo">${LOGO_CV.replace('width="34" height="34"','width="54" height="54"')}<b>Cap<i>View</i></b></div></div>
+    <div class="cv-kpis">${[["Founders own today",pct(fEnd,1)],["Total raised",M.rounds.length?cr(raised,1):"—"],["Latest post-money",last?cr(last.post,1):"—"],["Price per share",last?"₹"+nf(last.price,0):"—"],["Funding rounds",String(M.rounds.length)],["Shareholders",String(M.holders.filter(h=>h.shares>0).length)]].map(([k,v2])=>`<div><span>${k}</span><b>${v2}</b></div>`).join("")}</div>
+    <div class="cv-body">
+      <div class="cv-two">
+        <div class="cv-card cv-donut"><h3>Who Owns What Today</h3><div class="cv-dw">${rDonut(M,190)}<table class="cv-leg">${M.holders.filter(h=>h.shares>0).map(h=>`<tr><td><i style="background:${h.color}"></i>${esc(h.name)}</td><td>${pct(h.shares/M.total,1)}</td></tr>`).join("")}</table></div>
+          <div class="cv-verdict" style="border-color:${verdict[1]};color:${verdict[1]}">${verdict[0]}</div></div>
+        <div class="cv-card"><h3>The Story in One Line</h3><p class="cv-moral">${esc(moral)}</p>
+          ${big&&big.poolCostCr>0?`<div class="cv-call"><b>The quiet cost:</b> in ${esc(big.name)}, topping up the ESOP pool before the round took ${cr(big.poolCostCr,1)} out of the ${cr(big.pre,0)} headline pre-money. Founders effectively sold at ${cr(big.effPre,1)}.</div>`:""}
+          ${fin(fGet)?`<div class="cv-call"><b>At a ${cr(exit,0)} exit:</b> founders own ${pct(fEnd,0)} but would receive ${pct(fGet,0)} of the proceeds${fEnd-fGet>0.005?", because investor preferences are paid first":""}.</div>`:""}</div>
+      </div>
+      <h3 class="cv-sec">Round by Round, as Pizza</h3>
+      <div class="cv-pz">${M.stages.slice(0,6).map((st,i)=>{const r=i?M.rounds[i-1]:null;const rad=r?38+52*Math.sqrt(r.post/maxP):38;return `<div class="cv-pzc"><b>${esc(st.label)}</b>${pizzaSVG(st.shares,M.holders,rad,"r"+i,r?r.post:null,st.label).replace("<svg ","<svg width=\"118\" height=\"118\" ").replace('viewBox="-12 -12 224 224"','viewBox="0 0 200 200"')}<span>Founders ${pct(stageF(st),0)}</span><small>${r?cr(r.post,0)+" post":"An idea"}</small></div>`}).join("")}</div>
+      <h3 class="cv-sec">How Ownership Changed</h3>
+      <div class="cv-card">${rStack(M,640)}<div class="cv-legs">${M.holders.filter(h=>h.shares>0).map(h=>`<span><i style="background:${h.color}"></i>${esc(h.name)}</span>`).join("")}</div></div>
+    </div>${foot(1)}</div>
+  <div class="html2pdf__page-break"></div>
+  <div class="cv-p">${top(2,"The Cap Table, Round by Round","Who owned what after each round")}
+    <table class="cv-t"><thead><tr><th>Shareholder</th>${M.stages.map(st=>`<th>${esc(st.label)}</th>`).join("")}<th>Shares today</th></tr></thead><tbody>
+    ${hs.map(h=>`<tr><td><i style="background:${h.color}"></i>${esc(h.name)}<small>${esc(htype(h))}</small></td>${M.stages.map(st=>{const tot=Object.values(st.shares).reduce((a,b)=>a+b,0)||1;const v=st.shares[h.key];return `<td>${v!=null&&v>0?pct(v/tot,1):"–"}</td>`}).join("")}<td>${nf(h.shares,0)}</td></tr>`).join("")}
+    <tr class="tot"><td>Total</td>${M.stages.map(()=>"<td>100%</td>").join("")}<td>${nf(M.total,0)}</td></tr></tbody></table>
+    ${M.rounds.length?`<h3 class="cv-sec">Round Economics</h3><table class="cv-t"><thead><tr><th>Round</th><th>Pre-money</th><th>Raised</th><th>Post-money</th><th>Price / share</th><th>Step-up</th><th>Investor stake</th><th>Effective pre-money</th><th>Founders</th></tr></thead><tbody>${M.rounds.map(r=>`<tr><td>${esc(r.name)}</td><td>${cr(r.pre,1)}</td><td>${cr(r.inv,1)}</td><td>${cr(r.post,1)}</td><td>₹${nf(r.price,0)}</td><td>${r.stepUp?nf(r.stepUp,1)+"x":"–"}</td><td>${pct(r.invPct,1)}</td><td>${cr(r.effPre,1)}</td><td>${pct(r.fBefore,0)} → ${pct(r.fAfter,0)}</td></tr>`).join("")}</tbody></table><p class="cv-note">Effective pre-money removes the value of new ESOP shares created just before each round (the option pool shuffle).</p>`:`<p class="cv-note">No funding rounds entered yet.</p>`}
+    <div class="cv-two" style="margin-top:14px"><div class="cv-card"><h3>Mentors &amp; Advisors</h3>${M.holders.filter(h=>h.type==="advisor").length?`<table class="cv-t sm"><thead><tr><th>Name</th><th>Granted</th><th>Stake today</th></tr></thead><tbody>${M.holders.filter(h=>h.type==="advisor").map(h=>`<tr><td>${esc(h.name)}</td><td>${h.grantedAt?"Before "+esc((M.rounds[h.grantedAt-1]||{}).name||"round"):"At founding"}</td><td>${pct(h.shares/M.total,2)}</td></tr>`).join("")}</tbody></table>`:`<p class="cv-note" style="margin:0">No mentor equity in this cap table.</p>`}</div>
+    <div class="cv-card"><h3>ESOP Pool</h3><ul class="cv-ul"><li>Pool today: <b>${pct((M.pool.shares||0)/M.total,1)}</b> of the company (${nf(M.pool.shares||0,0)} shares).</li>${M.rounds.filter(r=>r.X>0).map(r=>`<li>${esc(r.name)}: topped up by ${nf(r.X,0)} shares, worth ${cr(r.poolCostCr,1)} at the round price.</li>`).join("")}</ul></div></div>
+    ${foot(2)}</div>
+  <div class="html2pdf__page-break"></div>
+  <div class="cv-p">${top(3,"Who Gets Paid at Exit","The waterfall, the sensitivity and the fine print")}
+    ${W2?`<div class="cv-two"><div class="cv-card"><h3>Sale of ${cr(exit,0)}</h3><p class="cv-note" style="margin-top:0">${S.seniority==="pari"?"Pari passu":"Stacked, latest round paid first"} · ${invs.map(h=>`${esc(h.round)}: ${h.lp?nf(h.lp,1)+"x":"no"} pref${h.part?", participating":""}`).join(" · ")}</p>${rPayBars(M,W2.out,exit,330)}</div>
+      <div class="cv-card"><h3>Who Takes What</h3><table class="cv-t sm"><thead><tr><th>Holder</th><th>Owns</th><th>Gets</th><th>Takes</th><th>Return</th></tr></thead><tbody>${M.holders.filter(h=>h.shares>0).map(h=>{const v=W2.out[h.key]||0;return `<tr><td>${esc(h.name.length>20?h.name.slice(0,19)+"…":h.name)}</td><td>${pct(h.shares/M.total,1)}</td><td>${pct(v/exit,1)}</td><td>${h.type==="investor"?(h.part?"Pref + shares":W2.conv[h.key]?"Converts":`${nf(h.lp,1)}x pref`):"Common"}</td><td>${h.type==="investor"&&h.invested>0?nf(v/h.invested,2)+"x":"–"}</td></tr>`}).join("")}</tbody></table></div></div>
+      <h3 class="cv-sec">How the Split Changes With the Exit Value</h3>
+      <table class="cv-t"><thead><tr><th>Exit value</th><th>Founders get</th><th>Founders’ share</th><th>Investors get</th><th>ESOP pool gets</th><th>Mentors get</th></tr></thead><tbody>${sens}</tbody></table>
+      <p class="cv-note">Low exits are where liquidation preferences bite; at high exits investors convert and ownership decides.</p>`:`<p class="cv-note">Add a funding round to model an exit.</p>`}
+    <div class="cv-two" style="margin-top:12px"><div class="cv-card"><h3>Assumptions</h3><ul class="cv-ul"><li>The whole ESOP pool is treated as granted and exercised at exit.</li><li>Pool targets are topped up before each round (pre-money).</li><li>Mentor grants dilute everyone holding shares at the time.</li><li>No convertible notes, SAFEs, anti-dilution or secondary sales; taxes and deal costs ignored.</li></ul></div>
+      <div class="cv-card"><h3>Key Terms</h3><ul class="cv-ul"><li><b>Post-money</b> = pre-money + investment; stake = investment ÷ post-money.</li><li><b>Option pool shuffle:</b> new ESOP shares created before a round dilute only existing owners.</li><li><b>Liquidation preference:</b> investors take their money back first in a sale, if that beats their share.</li></ul></div></div>
+    <div class="cv-disc"><b>Disclaimer.</b> CapView is an educational tool built by Kunal Jain, a CA Finalist. This report is generated from figures entered by the user and simplified assumptions. It is not legal, tax or investment advice. Real term sheets include clauses not modelled here; consult a qualified professional before relying on any figure.</div>
+    ${foot(3)}</div>`;
+}
+const LOGO_CV=`<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M2.5 17Q17 4 31.5 17Q17 30 2.5 17Z" fill="none" stroke="#1F3A93" stroke-width="2.6" stroke-linejoin="round"/><g transform="rotate(-90 17 17)" fill="none" stroke-width="4.2"><circle cx="17" cy="17" r="6.2" stroke="#1F3A93" stroke-dasharray="19.5 39"/><circle cx="17" cy="17" r="6.2" stroke="#E0A030" stroke-dasharray="9.5 39" stroke-dashoffset="-20.5"/><circle cx="17" cy="17" r="6.2" stroke="#E0674A" stroke-dasharray="7.5 39" stroke-dashoffset="-31"/></g></svg>`;
+
 function printReport(){
   if(!(compute().total>0)){alert("Enter some numbers first, or load the example.");return}
   document.querySelectorAll(".tabpanel").forEach(p=>p.dataset.wasHidden=p.hidden?"1":"");
